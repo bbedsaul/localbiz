@@ -306,12 +306,16 @@ app.post('/api/searches/:id/run', authMiddleware, async (req: AuthenticatedReque
       return;
     }
 
+    // Update last_run immediately when sweep is triggered
+    await updateScheduledSearch(parseInt(id, 10), {
+      last_run: new Date().toISOString(),
+    });
+
     // Trigger sweep asynchronously
     runProspectorSweep({ city: search.city, category: search.category })
       .then(async (stats) => {
         await updateScheduledSearch(parseInt(id, 10), {
-          last_run: new Date().toISOString(),
-          found_count: stats.upserted,
+          found_count: (search.found_count || 0) + stats.upserted,
         });
         console.log(`Sweep completed for search ${id}:`, stats);
       })
