@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { T } from '../tokens';
 import { Badge, Btn, StatPill, Head, Modal, FSelect, Card } from '../components/shared';
-import { SkeletonRows, ErrorBanner } from '../components/Loading';
+import { SkeletonRows, ErrorBanner, ToastContainer, ToastMessage } from '../components/Loading';
 import { api, ApiError } from '../lib/api';
 
 const CATEGORIES = [
@@ -74,6 +74,17 @@ export function TabMaps() {
   const [newCategory, setNewCategory] = useState('');
   const [newCity, setNewCity] = useState('');
   const [newSchedule, setNewSchedule] = useState('');
+  const [runningIds, setRunningIds] = useState<Set<number>>(new Set());
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = useCallback((message: string, type: ToastMessage['type'] = 'info') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
+
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   const fetchSearches = async () => {
     setLoading(true);
@@ -121,11 +132,23 @@ export function TabMaps() {
   };
 
   const runNow = async (id: number) => {
+    const search = searches.find(s => s.id === id);
+    if (!search) return;
+
+    setRunningIds((prev) => new Set(prev).add(id));
     try {
       await api.post(`/api/searches/${id}/run`);
-      await fetchSearches(); // Refresh to get updated last_run
+      addToast(`Sweep started for ${search.category} in ${search.city}`, 'success');
+      // Refresh after a delay to show updated last_run
+      setTimeout(() => fetchSearches(), 2000);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to run search');
+      addToast(err instanceof ApiError ? err.message : 'Failed to start sweep', 'error');
+    } finally {
+      setRunningIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -186,8 +209,13 @@ export function TabMaps() {
                   <Btn size="sm" variant="ghost" onClick={() => toggleStatus(search.id)}>
                     {search.status === 'active' ? 'Pause' : 'Resume'}
                   </Btn>
-                  <Btn size="sm" variant="green" onClick={() => runNow(search.id)}>
-                    Run Now
+                  <Btn
+                    size="sm"
+                    variant="green"
+                    onClick={() => runNow(search.id)}
+                    disabled={runningIds.has(search.id)}
+                  >
+                    {runningIds.has(search.id) ? 'Running...' : 'Run Now'}
                   </Btn>
                   <Btn size="sm" variant="danger" onClick={() => removeSearch(search.id)}>
                     Remove
@@ -212,6 +240,9 @@ export function TabMaps() {
           </div>
         </Modal>
       )}
+
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
