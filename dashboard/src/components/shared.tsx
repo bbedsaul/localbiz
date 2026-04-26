@@ -1,24 +1,26 @@
 import { CSSProperties, ReactNode } from 'react';
-import { T } from '../tokens';
+import { T, ThemeTokens } from '../tokens';
 
-// Status metadata
+// Status metadata - computed at render time to support theme switching
 type Status = 'active' | 'paused' | 'new' | 'queued' | 'building' | 'contacted' | 'live' | 'approved' | 'pending' | 'rejected';
 
-const statusMeta: Record<Status, { color: string; bg: string; label: string }> = {
-  active: { color: T.accentHi, bg: T.accentDim, label: 'Active' },
-  paused: { color: T.muted, bg: T.dim, label: 'Paused' },
-  new: { color: T.blue, bg: T.blueDim, label: 'New' },
-  queued: { color: T.amber, bg: T.amberDim, label: 'Queued' },
-  building: { color: T.purple, bg: T.purpleDim, label: 'Building' },
-  contacted: { color: T.accent, bg: T.accentDim, label: 'Contacted' },
-  live: { color: T.accentHi, bg: T.accentDim, label: 'Live' },
-  approved: { color: T.accentHi, bg: T.accentDim, label: 'Approved' },
-  pending: { color: T.amber, bg: T.amberDim, label: 'Pending' },
-  rejected: { color: T.red, bg: T.redDim, label: 'Rejected' },
-};
+function getStatusMeta(t: ThemeTokens): Record<Status, { color: string; bg: string; label: string }> {
+  return {
+    active: { color: t.accentHi, bg: t.accentDim, label: 'Active' },
+    paused: { color: t.muted, bg: t.dim, label: 'Paused' },
+    new: { color: t.blue, bg: t.blueDim, label: 'New' },
+    queued: { color: t.amber, bg: t.amberDim, label: 'Queued' },
+    building: { color: t.purple, bg: t.purpleDim, label: 'Building' },
+    contacted: { color: t.accent, bg: t.accentDim, label: 'Contacted' },
+    live: { color: t.accentHi, bg: t.accentDim, label: 'Live' },
+    approved: { color: t.accentHi, bg: t.accentDim, label: 'Approved' },
+    pending: { color: t.amber, bg: t.amberDim, label: 'Pending' },
+    rejected: { color: t.red, bg: t.redDim, label: 'Rejected' },
+  };
+}
 
 export function Badge({ status }: { status: Status }) {
-  const meta = statusMeta[status];
+  const meta = getStatusMeta(T)[status];
   return (
     <span
       style={{
@@ -67,15 +69,17 @@ export function Score({ value }: { value: number }) {
 type BtnVariant = 'primary' | 'ghost' | 'danger' | 'amber' | 'blue' | 'purple' | 'green';
 type BtnSize = 'sm' | 'md';
 
-const btnColors: Record<BtnVariant, { bg: string; color: string; border?: string }> = {
-  primary: { bg: T.accent, color: T.bg },
-  ghost: { bg: 'transparent', color: T.text, border: T.border },
-  danger: { bg: T.redDim, color: T.red },
-  amber: { bg: T.amberDim, color: T.amber },
-  blue: { bg: T.blueDim, color: T.blue },
-  purple: { bg: T.purpleDim, color: T.purple },
-  green: { bg: T.accentDim, color: T.accentHi },
-};
+function getBtnColors(t: ThemeTokens): Record<BtnVariant, { bg: string; color: string; border?: string }> {
+  return {
+    primary: { bg: t.accent, color: t.bg },
+    ghost: { bg: 'transparent', color: t.text, border: t.border },
+    danger: { bg: t.redDim, color: t.red },
+    amber: { bg: t.amberDim, color: t.amber },
+    blue: { bg: t.blueDim, color: t.blue },
+    purple: { bg: t.purpleDim, color: t.purple },
+    green: { bg: t.accentDim, color: t.accentHi },
+  };
+}
 
 export function Btn({
   children,
@@ -90,7 +94,7 @@ export function Btn({
   size?: BtnSize;
   disabled?: boolean;
 }) {
-  const colors = btnColors[variant];
+  const colors = getBtnColors(T)[variant];
   const padding = size === 'sm' ? '6px 12px' : '8px 16px';
   const fontSize = size === 'sm' ? 12 : 13;
 
