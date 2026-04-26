@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
 import { upsertProspect } from './db.js';
-import { Prospect } from './types.js';
+import { markContacted, recordResponse, getOutreachStats } from './queue.js';
+import { Prospect, ContactMethod, OutreachResponse } from './types.js';
 import 'dotenv/config';
 
 const app = express();
@@ -87,6 +88,62 @@ app.post('/api/onboard', async (req: Request<object, object, OnboardingBody>, re
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Outreach endpoints
+interface ContactBody {
+  method: ContactMethod;
+}
+
+interface ResponseBody {
+  response: OutreachResponse;
+  notes?: string;
+}
+
+app.post('/api/outreach/:placeId/contact', async (req: Request<{ placeId: string }, object, ContactBody>, res: Response) => {
+  const { placeId } = req.params;
+  const { method } = req.body;
+
+  if (!method || !['email', 'phone', 'mail'].includes(method)) {
+    res.status(400).json({ error: 'Invalid or missing contact method' });
+    return;
+  }
+
+  try {
+    await markContacted(placeId, method);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Failed to mark contacted:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/outreach/:placeId/response', async (req: Request<{ placeId: string }, object, ResponseBody>, res: Response) => {
+  const { placeId } = req.params;
+  const { response, notes } = req.body;
+
+  if (!response || !['interested', 'not_interested', 'no_response'].includes(response)) {
+    res.status(400).json({ error: 'Invalid or missing response' });
+    return;
+  }
+
+  try {
+    await recordResponse(placeId, response, notes);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Failed to record response:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/outreach/stats', async (_req: Request, res: Response) => {
+  try {
+    const stats = await getOutreachStats();
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error('Failed to get outreach stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export { app, generatePlaceId };

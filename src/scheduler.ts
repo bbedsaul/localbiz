@@ -1,18 +1,24 @@
 import cron from 'node-cron';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { runProspectorSweep } from './prospector.js';
 import { promoteTopProspects } from './queue.js';
 import 'dotenv/config';
 
-const CITIES = ['Austin TX', 'Denver CO', 'Phoenix AZ', 'Tampa FL', 'Charlotte NC'];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const CATEGORIES = [
-  'plumber',
-  'electrician',
-  'landscaper',
-  'roofing contractor',
-  'HVAC',
-  'auto repair',
-];
+interface TargetsConfig {
+  cities: string[];
+  categories: string[];
+}
+
+const configPath = join(__dirname, '..', 'config', 'targets.json');
+const targetsConfig: TargetsConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+
+const CITIES = targetsConfig.cities;
+const CATEGORIES = targetsConfig.categories;
 
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 2 * * *';
 

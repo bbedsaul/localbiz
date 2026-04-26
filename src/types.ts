@@ -25,12 +25,35 @@ export interface Prospect {
   review_count?: number;
   photo_count?: number;
   score: number;
-  status: 'new' | 'queued' | 'contacted' | 'converted';
+  status: 'new' | 'queued' | 'contacted' | 'converted' | 'closed' | 'rejected';
   source?: 'form' | 'maps';
   city: string;
   category: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export type ContactMethod = 'email' | 'phone' | 'mail';
+
+export type OutreachResponse = 'interested' | 'not_interested' | 'no_response';
+
+export interface OutreachRecord {
+  id: number;
+  place_id: string;
+  queued_at: string;
+  contact_method?: ContactMethod;
+  contacted_at?: string;
+  response?: OutreachResponse;
+  responded_at?: string;
+  notes?: string;
+}
+
+export interface OutreachStats {
+  total: number;
+  contacted: number;
+  interested: number;
+  not_interested: number;
+  no_response: number;
 }
 
 export interface SweepParams {
