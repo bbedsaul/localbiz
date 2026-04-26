@@ -118,6 +118,28 @@ describe('places-client retry logic', () => {
 
       expect(thrownError?.url).toContain('places:searchText');
     });
+
+    it('should double delay between retries (1s, 2s)', async () => {
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      mockAxiosPost
+        .mockRejectedValueOnce(createAxiosError(429))
+        .mockRejectedValueOnce(createAxiosError(429))
+        .mockResolvedValueOnce({
+          data: { places: [{ id: 'place-1', displayName: { text: 'Test' } }] },
+        });
+
+      const resultPromise = searchPlaces('plumber in Austin TX');
+      await jest.runAllTimersAsync();
+      await resultPromise;
+
+      // Verify exponential backoff via logged messages
+      const calls = logSpy.mock.calls.map(c => c[0] as string);
+      expect(calls).toContainEqual(expect.stringContaining('after 1000ms'));
+      expect(calls).toContainEqual(expect.stringContaining('after 2000ms'));
+
+      logSpy.mockRestore();
+    });
   });
 
   describe('getPlaceDetails', () => {
