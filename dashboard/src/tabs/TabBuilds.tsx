@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { T } from '../tokens';
 import { Badge, Btn, StatPill, Head, Modal, FInput, FSelect, Card, Label } from '../components/shared';
+import { SkeletonRows, ErrorBanner } from '../components/Loading';
+import { api, ApiError } from '../lib/api';
 
 type BuildStatus = 'queued' | 'building' | 'live';
 
@@ -16,6 +18,26 @@ interface Build {
   priority: 'low' | 'normal' | 'high';
 }
 
+interface ApiBuild {
+  id: string;
+  business_name: string;
+  template: string;
+  status: BuildStatus;
+  started_at: string | null;
+  completed_at: string | null;
+  url?: string;
+  domain?: string;
+  priority: 'low' | 'normal' | 'high';
+  prospect_id?: string;
+}
+
+interface BuildStats {
+  total: number;
+  queued: number;
+  building: number;
+  live: number;
+}
+
 const TEMPLATES = [
   'Local Business',
   'Trades & Contractor',
@@ -26,13 +48,35 @@ const TEMPLATES = [
   'Auto Service',
 ];
 
-const sampleBuilds: Build[] = [
-  { id: '1', businessName: 'Johnson Plumbing', template: 'Trades & Contractor', status: 'live', startedAt: '3d ago', completedAt: '3d ago', url: 'johnsonplumbing.site', priority: 'normal' },
-  { id: '2', businessName: 'Quick Fix HVAC', template: 'Trades & Contractor', status: 'building', startedAt: '2h ago', priority: 'high' },
-  { id: '3', businessName: 'Maria\'s Kitchen', template: 'Restaurant & Cafe', status: 'live', startedAt: '1w ago', completedAt: '1w ago', url: 'mariaskitchen.site', priority: 'normal' },
-  { id: '4', businessName: 'Dayton Dental Group', template: 'Health & Wellness', status: 'queued', startedAt: 'Pending', priority: 'normal' },
-  { id: '5', businessName: 'Auto Masters', template: 'Auto Service', status: 'queued', startedAt: 'Pending', priority: 'low' },
-];
+function formatRelativeTime(dateStr: string | null): string {
+  if (!dateStr) return 'Pending';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return `${Math.floor(diffDays / 7)}w ago`;
+}
+
+function mapApiBuild(b: ApiBuild): Build {
+  return {
+    id: b.id,
+    businessName: b.business_name,
+    template: b.template,
+    status: b.status,
+    startedAt: formatRelativeTime(b.started_at),
+    completedAt: b.completed_at ? formatRelativeTime(b.completed_at) : undefined,
+    url: b.url,
+    domain: b.domain,
+    priority: b.priority,
+  };
+}
 
 interface PendingBuild {
   name: string;
@@ -45,12 +89,36 @@ export function TabBuilds({
   pendingBuild: PendingBuild | null;
   clearPendingBuild: () => void;
 }) {
-  const [builds, setBuilds] = useState(sampleBuilds);
+  const [builds, setBuilds] = useState<Build[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<BuildStats>({ total: 0, queued: 0, building: 0, live: 0 });
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTemplate, setNewTemplate] = useState('');
   const [newDomain, setNewDomain] = useState('');
   const [newPriority, setNewPriority] = useState<'low' | 'normal' | 'high'>('normal');
+
+  const fetchBuilds = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [buildsData, statsData] = await Promise.all([
+        api.get<ApiBuild[]>('/api/builds'),
+        api.get<BuildStats>('/api/builds/stats'),
+      ]);
+      setBuilds(buildsData.map(mapApiBuild));
+      setStats(statsData);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to load builds');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBuilds();
+  }, []);
 
   // Open modal with pre-filled name when pendingBuild arrives
   useEffect(() => {
@@ -59,13 +127,6 @@ export function TabBuilds({
       setShowModal(true);
     }
   }, [pendingBuild]);
-
-  const counts = {
-    total: builds.length,
-    queued: builds.filter(b => b.status === 'queued').length,
-    building: builds.filter(b => b.status === 'building').length,
-    live: builds.filter(b => b.status === 'live').length,
-  };
 
   const closeModal = () => {
     setShowModal(false);
@@ -76,25 +137,33 @@ export function TabBuilds({
     clearPendingBuild();
   };
 
-  const startBuild = () => {
+  const startBuild = async () => {
     if (!newName || !newTemplate) return;
-    const newBuild: Build = {
-      id: Date.now().toString(),
-      businessName: newName,
-      template: newTemplate,
-      status: 'queued',
-      startedAt: 'Pending',
-      domain: newDomain || undefined,
-      priority: newPriority,
-    };
-    setBuilds([newBuild, ...builds]);
-    closeModal();
+    try {
+      const newBuildData = await api.post<ApiBuild>('/api/builds', {
+        business_name: newName,
+        template: newTemplate,
+        domain: newDomain || undefined,
+        priority: newPriority,
+      });
+      setBuilds([mapApiBuild(newBuildData), ...builds]);
+      setStats(s => ({ ...s, total: s.total + 1, queued: s.queued + 1 }));
+      closeModal();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to create build');
+    }
   };
 
-  const startBuildNow = (id: string) => {
-    setBuilds(builds.map(b =>
-      b.id === id ? { ...b, status: 'building' as BuildStatus, startedAt: 'Just now' } : b
-    ));
+  const startBuildNow = async (id: string) => {
+    try {
+      await api.patch(`/api/builds/${id}`, { status: 'building' });
+      setBuilds(builds.map(b =>
+        b.id === id ? { ...b, status: 'building' as BuildStatus, startedAt: 'Just now' } : b
+      ));
+      setStats(s => ({ ...s, queued: s.queued - 1, building: s.building + 1 }));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to start build');
+    }
   };
 
   return (
@@ -107,64 +176,70 @@ export function TabBuilds({
 
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        <StatPill label="Total" value={counts.total} />
-        <StatPill label="Queued" value={counts.queued} color={T.amber} />
-        <StatPill label="Building" value={counts.building} color={T.purple} />
-        <StatPill label="Live" value={counts.live} color={T.accentHi} />
+        <StatPill label="Total" value={stats.total} />
+        <StatPill label="Queued" value={stats.queued} color={T.amber} />
+        <StatPill label="Building" value={stats.building} color={T.purple} />
+        <StatPill label="Live" value={stats.live} color={T.accentHi} />
       </div>
 
+      {/* Error banner */}
+      {error && <ErrorBanner message={error} onRetry={fetchBuilds} />}
+
       {/* Builds list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {builds.map(build => (
-          <Card key={build.id} style={{ padding: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <Badge status={build.status} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 500 }}>{build.businessName}</div>
-                <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
-                  {build.template} &middot; Started: {build.startedAt}
-                  {build.completedAt && ` · Completed: ${build.completedAt}`}
+      {loading && <SkeletonRows count={5} />}
+      {!loading && !error && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {builds.map(build => (
+            <Card key={build.id} style={{ padding: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <Badge status={build.status} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 500 }}>{build.businessName}</div>
+                  <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+                    {build.template} &middot; Started: {build.startedAt}
+                    {build.completedAt && ` · Completed: ${build.completedAt}`}
+                  </div>
+                  {build.url && (
+                    <div style={{ fontSize: 12, marginTop: 2 }}>
+                      <a
+                        href={`https://${build.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: T.accentHi }}
+                      >
+                        {build.url}
+                      </a>
+                    </div>
+                  )}
                 </div>
-                {build.url && (
-                  <div style={{ fontSize: 12, marginTop: 2 }}>
+                <div>
+                  {build.status === 'queued' && (
+                    <Btn size="sm" variant="primary" onClick={() => startBuildNow(build.id)}>
+                      Start Build
+                    </Btn>
+                  )}
+                  {build.status === 'building' && (
+                    <Btn size="sm" variant="purple" disabled>
+                      Building...
+                    </Btn>
+                  )}
+                  {build.status === 'live' && build.url && (
                     <a
                       href={`https://${build.url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: T.accentHi }}
                     >
-                      {build.url}
+                      <Btn size="sm" variant="green">
+                        View Site &#8599;
+                      </Btn>
                     </a>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-              <div>
-                {build.status === 'queued' && (
-                  <Btn size="sm" variant="primary" onClick={() => startBuildNow(build.id)}>
-                    Start Build
-                  </Btn>
-                )}
-                {build.status === 'building' && (
-                  <Btn size="sm" variant="purple" disabled>
-                    Building...
-                  </Btn>
-                )}
-                {build.status === 'live' && build.url && (
-                  <a
-                    href={`https://${build.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Btn size="sm" variant="green">
-                      View Site &#8599;
-                    </Btn>
-                  </a>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Config Modal */}
       {showModal && (
