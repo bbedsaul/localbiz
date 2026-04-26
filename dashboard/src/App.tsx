@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { T } from './tokens';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { LoginPage } from './components/LoginPage';
+import { SettingsModal } from './components/SettingsModal';
 import { TabMaps } from './tabs/TabMaps';
 import { TabProspects } from './tabs/TabProspects';
 import { TabForms } from './tabs/TabForms';
@@ -23,10 +24,12 @@ const tabMeta: Record<Tab, { icon: string; label: string; sub: string }> = {
 // Sample pending forms count for badge
 const pendingFormsCount = 3;
 
-function App() {
+function Dashboard() {
+  const { T } = useTheme();
   const { user, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('maps');
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleBuild = (prospect: { name: string }) => {
     setPendingBuild(prospect);
@@ -171,6 +174,23 @@ function App() {
             {user.email}
           </span>
 
+          {/* Settings button */}
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{
+              padding: '6px 10px',
+              background: T.surfaceHigh,
+              border: `1px solid ${T.border}`,
+              borderRadius: 6,
+              color: T.muted,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+            title="Settings"
+          >
+            ⚙
+          </button>
+
           {/* Sign out button */}
           <button
             onClick={signOut}
@@ -222,7 +242,18 @@ function App() {
           <TabBuilds pendingBuild={pendingBuild} clearPendingBuild={clearPendingBuild} />
         )}
       </main>
+
+      {/* Settings modal */}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <Dashboard />
+    </ThemeProvider>
   );
 }
 
