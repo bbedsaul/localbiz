@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { T } from './tokens';
+import { useAuth } from './hooks/useAuth';
+import { LoginPage } from './components/LoginPage';
 import { TabMaps } from './tabs/TabMaps';
 import { TabProspects } from './tabs/TabProspects';
 import { TabForms } from './tabs/TabForms';
@@ -22,6 +24,7 @@ const tabMeta: Record<Tab, { icon: string; label: string; sub: string }> = {
 const pendingFormsCount = 3;
 
 function App() {
+  const { user, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('maps');
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
 
@@ -34,6 +37,43 @@ function App() {
     setPendingBuild(null);
   };
 
+  // Loading state - centered spinner
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: T.bg,
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            border: `3px solid ${T.border}`,
+            borderTopColor: T.accent,
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // No user - show login page
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  // Authenticated - render dashboard
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Top Nav */}
@@ -101,18 +141,52 @@ function App() {
           ))}
         </div>
 
-        {/* Pipeline status indicator */}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Right side: pipeline status + user info + sign out */}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Pipeline status indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: T.accentHi,
+                boxShadow: `0 0 8px ${T.accent}`,
+              }}
+            />
+            <span style={{ fontSize: 12, color: T.muted }}>Pipeline active</span>
+          </div>
+
+          {/* Separator */}
+          <div style={{ width: 1, height: 20, background: T.border }} />
+
+          {/* User email */}
           <span
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: T.accentHi,
-              boxShadow: `0 0 8px ${T.accent}`,
+              fontSize: 12,
+              fontFamily: "'JetBrains Mono', monospace",
+              color: T.dim,
             }}
-          />
-          <span style={{ fontSize: 12, color: T.muted }}>Pipeline active</span>
+          >
+            {user.email}
+          </span>
+
+          {/* Sign out button */}
+          <button
+            onClick={signOut}
+            style={{
+              padding: '6px 12px',
+              background: T.surfaceHigh,
+              border: `1px solid ${T.border}`,
+              borderRadius: 6,
+              color: T.muted,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </nav>
 
