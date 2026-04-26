@@ -85,3 +85,59 @@ export async function insertToOutreachQueue(placeId: string): Promise<void> {
     throw new Error(`Failed to insert to outreach queue: ${error.message}`);
   }
 }
+
+export async function getTopProspectsAll(limit: number): Promise<Prospect[]> {
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('*')
+    .order('score', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to get top prospects: ${error.message}`);
+  }
+
+  return data as Prospect[];
+}
+
+export interface PipelineStats {
+  byStatus: { status: string; count: number }[];
+  bySource: { source: string; count: number }[];
+}
+
+export async function getPipelineStats(): Promise<PipelineStats> {
+  // Get counts by status
+  const { data: statusData, error: statusError } = await supabase
+    .from('prospects')
+    .select('status');
+
+  if (statusError) {
+    throw new Error(`Failed to get status stats: ${statusError.message}`);
+  }
+
+  const statusCounts: Record<string, number> = {};
+  for (const row of statusData || []) {
+    const status = row.status || 'unknown';
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  }
+
+  // Get counts by source
+  const { data: sourceData, error: sourceError } = await supabase
+    .from('prospects')
+    .select('source');
+
+  if (sourceError) {
+    throw new Error(`Failed to get source stats: ${sourceError.message}`);
+  }
+
+  const sourceCounts: Record<string, number> = {};
+  for (const row of sourceData || []) {
+    const source = row.source || 'unknown';
+    sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+  }
+
+  return {
+    byStatus: Object.entries(statusCounts).map(([status, count]) => ({ status, count })),
+    bySource: Object.entries(sourceCounts).map(([source, count]) => ({ source, count })),
+  };
+}
