@@ -77,3 +77,27 @@ export class PlacesApiError extends Error {
     this.name = 'PlacesApiError';
   }
 }
+
+export interface ScheduledSearch {
+  id: number;
+  category: string;
+  city: string;
+  schedule: string;
+  status: 'active' | 'paused';
+  last_run?: string;
+  found_count: number;
+  created_at: string;
+}
+
+export interface SiteBuild {
+  id: number;
+  prospect_id: string;
+  template: string;
+  domain?: string;
+  priority: 'low' | 'normal' | 'high';
+  status: 'queued' | 'building' | 'live';
+  started_at?: string;
+  completed_at?: string;
+  url?: string;
+  created_at: string;
+}

@@ -3,14 +3,33 @@ import request from 'supertest';
 import type { Express } from 'express';
 
 const mockUpsertProspect = jest.fn<() => Promise<void>>();
+const mockGetProspectStats = jest.fn<() => Promise<object>>();
+const mockGetUser = jest.fn<() => Promise<{ data: { user: object | null }; error: Error | null }>>();
 
 jest.unstable_mockModule('../src/db.js', () => ({
   upsertProspect: mockUpsertProspect,
-  supabase: {},
+  supabase: {
+    auth: {
+      getUser: mockGetUser,
+    },
+  },
   findByPlaceId: jest.fn(),
   getTopProspects: jest.fn(),
   updateProspectStatus: jest.fn(),
   insertToOutreachQueue: jest.fn(),
+  getProspects: jest.fn(),
+  getProspectStats: mockGetProspectStats,
+  getFormSubmissions: jest.fn(),
+  getFormStats: jest.fn(),
+  getScheduledSearches: jest.fn(),
+  createScheduledSearch: jest.fn(),
+  updateScheduledSearch: jest.fn(),
+  deleteScheduledSearch: jest.fn(),
+  getScheduledSearchById: jest.fn(),
+  getSiteBuilds: jest.fn(),
+  getBuildStats: jest.fn(),
+  createSiteBuild: jest.fn(),
+  updateSiteBuild: jest.fn(),
 }));
 
 let app: Express;
@@ -113,5 +132,109 @@ describe('GET /health', () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
     expect(res.body.timestamp).toBeDefined();
+  });
+});
+
+describe('Protected Routes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('GET /api/prospects/stats', () => {
+    it('should return 401 when no authorization header is provided', async () => {
+      const res = await request(app).get('/api/prospects/stats');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
+
+    it('should return 401 when authorization header is malformed', async () => {
+      const res = await request(app)
+        .get('/api/prospects/stats')
+        .set('Authorization', 'InvalidToken');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
+
+    it('should return 401 when token is invalid', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Invalid token'),
+      });
+
+      const res = await request(app)
+        .get('/api/prospects/stats')
+        .set('Authorization', 'Bearer invalid-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+    });
+
+    it('should return 200 with stats when token is valid', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-123', email: 'test@example.com' } },
+        error: null,
+      });
+
+      mockGetProspectStats.mockResolvedValue({
+        total: 100,
+        new: 50,
+        queued: 20,
+        contacted: 15,
+        building: 10,
+        live: 5,
+      });
+
+      const res = await request(app)
+        .get('/api/prospects/stats')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        total: 100,
+        new: 50,
+        queued: 20,
+        contacted: 15,
+        building: 10,
+        live: 5,
+      });
+    });
+  });
+
+  describe('GET /api/prospects', () => {
+    it('should return 401 without authorization', async () => {
+      const res = await request(app).get('/api/prospects');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
+  });
+
+  describe('GET /api/forms', () => {
+    it('should return 401 without authorization', async () => {
+      const res = await request(app).get('/api/forms');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
+  });
+
+  describe('GET /api/searches', () => {
+    it('should return 401 without authorization', async () => {
+      const res = await request(app).get('/api/searches');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
+  });
+
+  describe('GET /api/builds', () => {
+    it('should return 401 without authorization', async () => {
+      const res = await request(app).get('/api/builds');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Missing authorization token');
+    });
   });
 });
