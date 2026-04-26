@@ -1,21 +1,10 @@
 import cron from 'node-cron';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { runProspectorSweep } from './prospector.js';
 import { promoteTopProspects } from './queue.js';
+import { loadTargets } from './config.js';
 import 'dotenv/config';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-interface TargetsConfig {
-  cities: string[];
-  categories: string[];
-}
-
-const configPath = join(__dirname, '..', 'config', 'targets.json');
-const targetsConfig: TargetsConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+const targetsConfig = loadTargets();
 
 const CITIES = targetsConfig.cities;
 const CATEGORIES = targetsConfig.categories;
