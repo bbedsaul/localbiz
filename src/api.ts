@@ -20,7 +20,8 @@ import {
   updateSiteBuild,
 } from './db.js';
 import { runProspectorSweep } from './prospector.js';
-import { Prospect } from './types.js';
+import { markContacted, recordResponse, getOutreachStats } from './queue.js';
+import { Prospect, ContactMethod, OutreachResponse } from './types.js';
 import 'dotenv/config';
 
 const app = express();
@@ -387,6 +388,56 @@ app.patch('/api/builds/:id', authMiddleware, async (req: AuthenticatedRequest, r
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Failed to update build:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============ Outreach ============
+
+app.post('/api/outreach/:prospectId/contact', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { prospectId } = req.params;
+  const { method } = req.body;
+
+  const validMethods: ContactMethod[] = ['email', 'phone', 'mail'];
+  if (!method || !validMethods.includes(method)) {
+    res.status(400).json({ error: 'Invalid method. Must be "email", "phone", or "mail"' });
+    return;
+  }
+
+  try {
+    await markContacted(prospectId, method);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Failed to mark contacted:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/outreach/:prospectId/response', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { prospectId } = req.params;
+  const { response, notes } = req.body;
+
+  const validResponses: OutreachResponse[] = ['interested', 'not_interested', 'no_response'];
+  if (!response || !validResponses.includes(response)) {
+    res.status(400).json({ error: 'Invalid response. Must be "interested", "not_interested", or "no_response"' });
+    return;
+  }
+
+  try {
+    await recordResponse(prospectId, response, notes);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Failed to record response:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/outreach/stats', authMiddleware, async (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    const stats = await getOutreachStats();
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error('Failed to get outreach stats:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
