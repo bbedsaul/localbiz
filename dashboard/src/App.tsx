@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { LoginPage } from './components/LoginPage';
+import OnboardingForm from './components/OnboardingForm';
 import { SettingsModal } from './components/SettingsModal';
 import { TabMaps } from './tabs/TabMaps';
 import { TabProspects } from './tabs/TabProspects';
@@ -250,6 +251,11 @@ function Dashboard() {
 }
 
 function App() {
+  // Public onboarding route — bypasses auth so prospects can submit the form.
+  if (typeof window !== 'undefined' && window.location.pathname === '/onboard') {
+    return <OnboardingForm />;
+  }
+
   return (
     <ThemeProvider>
       <Dashboard />

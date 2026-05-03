@@ -4,6 +4,16 @@ import { Badge, Btn, Score, StatPill, Head, Modal, FInput, Card, DetailRow } fro
 import { SkeletonRows, ErrorBanner } from '../components/Loading';
 import { api, ApiError } from '../lib/api';
 
+interface ProspectPhoto {
+  id: number;
+  prospect_place_id: string;
+  storage_key: string;
+  public_url: string;
+  file_name?: string;
+  caption?: string;
+  sort_order: number;
+}
+
 type ProspectStatus = 'new' | 'queued' | 'contacted' | 'building' | 'live';
 type Source = 'form' | 'maps';
 
@@ -57,6 +67,91 @@ function mapApiProspect(p: ApiProspect): Prospect {
 }
 
 const statusFilters: (ProspectStatus | 'all')[] = ['all', 'new', 'queued', 'contacted', 'building', 'live'];
+
+function ProspectPhotos({ prospectId }: { prospectId: string }) {
+  const [photos, setPhotos] = useState<ProspectPhoto[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    api.get<ProspectPhoto[]>(`/api/prospects/${prospectId}/photos`)
+      .then((data) => {
+        if (!cancelled) {
+          setPhotos(data);
+          setError(null);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof ApiError ? err.message : 'Failed to load photos');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [prospectId]);
+
+  const removePhoto = async (photoId: number) => {
+    try {
+      await api.del(`/api/prospects/${prospectId}/photos/${photoId}`);
+      setPhotos((current) => (current ? current.filter((p) => p.id !== photoId) : current));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to delete photo');
+    }
+  };
+
+  if (loading) return <div style={{ fontSize: 12, color: T.muted, padding: '8px 0' }}>Loading photos…</div>;
+  if (error) return <div style={{ fontSize: 12, color: T.amber, padding: '8px 0' }}>{error}</div>;
+  if (!photos || photos.length === 0) {
+    return <div style={{ fontSize: 12, color: T.muted, padding: '8px 0' }}>No photos submitted</div>;
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+      {photos.map((p) => (
+        <div key={p.id} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{
+            width: '100%',
+            aspectRatio: '1 / 1',
+            backgroundImage: `url(${p.public_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative',
+          }}>
+            <button
+              type="button"
+              onClick={() => removePhoto(p.id)}
+              title="Delete photo"
+              style={{
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                background: '#000c',
+                border: 'none',
+                color: '#fff',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          {p.caption && (
+            <div style={{ padding: '6px 8px', fontSize: 11, color: T.text, lineHeight: 1.3 }}>
+              {p.caption}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function TabProspects({ onBuild }: { onBuild: (prospect: { name: string }) => void }) {
   const [prospects, setProspects] = useState<Prospect[]>([]);
@@ -209,6 +304,13 @@ export function TabProspects({ onBuild }: { onBuild: (prospect: { name: string }
             <DetailRow label="Score" value={<Score value={selectedProspect.score} />} />
             <DetailRow label="Status" value={<Badge status={selectedProspect.status} />} />
             <DetailRow label="Source" value={selectedProspect.source} />
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: T.muted, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 10 }}>
+              Submitted Photos
+            </div>
+            <ProspectPhotos prospectId={selectedProspect.id} />
           </div>
         </Modal>
       )}

@@ -30,6 +30,10 @@ jest.unstable_mockModule('../src/db.js', () => ({
   getBuildStats: jest.fn(),
   createSiteBuild: jest.fn(),
   updateSiteBuild: jest.fn(),
+  insertProspectPhoto: jest.fn(),
+  getProspectPhotos: jest.fn(),
+  getProspectPhotoById: jest.fn(),
+  deleteProspectPhoto: jest.fn(),
 }));
 
 let app: Express;

@@ -89,6 +89,19 @@ export interface ScheduledSearch {
   created_at: string;
 }
 
+export interface ProspectPhoto {
+  id: number;
+  prospect_place_id: string;
+  storage_key: string;
+  public_url: string;
+  file_name?: string;
+  mime_type?: string;
+  size_bytes?: number;
+  caption?: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface SiteBuild {
   id: number;
   prospect_id: string;

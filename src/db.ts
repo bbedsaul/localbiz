@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Prospect, ScheduledSearch, SiteBuild } from './types.js';
+import { Prospect, ProspectPhoto, ScheduledSearch, SiteBuild } from './types.js';
 import 'dotenv/config';
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -401,5 +401,71 @@ export async function updateSiteBuild(
 
   if (error) {
     throw new Error(`Failed to update site build: ${error.message}`);
+  }
+}
+
+// ============ Prospect Photos API functions ============
+
+export interface InsertProspectPhotoInput {
+  prospect_place_id: string;
+  storage_key: string;
+  public_url: string;
+  file_name?: string;
+  mime_type?: string;
+  size_bytes?: number;
+  caption?: string;
+  sort_order: number;
+}
+
+export async function insertProspectPhoto(input: InsertProspectPhotoInput): Promise<ProspectPhoto> {
+  const { data, error } = await supabase
+    .from('prospect_photos')
+    .insert(input)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to insert prospect photo: ${error.message}`);
+  }
+
+  return data as ProspectPhoto;
+}
+
+export async function getProspectPhotos(prospectPlaceId: string): Promise<ProspectPhoto[]> {
+  const { data, error } = await supabase
+    .from('prospect_photos')
+    .select('*')
+    .eq('prospect_place_id', prospectPlaceId)
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to get prospect photos: ${error.message}`);
+  }
+
+  return data as ProspectPhoto[];
+}
+
+export async function getProspectPhotoById(photoId: number): Promise<ProspectPhoto | null> {
+  const { data, error } = await supabase
+    .from('prospect_photos')
+    .select('*')
+    .eq('id', photoId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    throw new Error(`Failed to get prospect photo: ${error.message}`);
+  }
+
+  return data as ProspectPhoto | null;
+}
+
+export async function deleteProspectPhoto(photoId: number): Promise<void> {
+  const { error } = await supabase
+    .from('prospect_photos')
+    .delete()
+    .eq('id', photoId);
+
+  if (error) {
+    throw new Error(`Failed to delete prospect photo: ${error.message}`);
   }
 }

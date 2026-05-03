@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import multer from 'multer';
 import {
   supabase,
   upsertProspect,
@@ -18,7 +19,12 @@ import {
   getBuildStats,
   createSiteBuild,
   updateSiteBuild,
+  insertProspectPhoto,
+  getProspectPhotos,
+  getProspectPhotoById,
+  deleteProspectPhoto,
 } from './db.js';
+import { storage } from './lib/storage.js';
 import { runProspectorSweep } from './prospector.js';
 import { markContacted, recordResponse, getOutreachStats } from './queue.js';
 import { Prospect, ContactMethod, OutreachResponse } from './types.js';
@@ -30,30 +36,6 @@ app.use(cors());
 app.use(express.json());
 
 // ============ Types ============
-
-interface OnboardingBody {
-  businessName?: string;
-  ownerName?: string;
-  city?: string;
-  state?: string;
-  phone?: string;
-  email?: string;
-  category?: string;
-  yearsInBusiness?: number;
-  serviceType?: string;
-  goals?: string;
-  wantsBooking?: boolean;
-  description?: string;
-  services?: string;
-  promo?: string;
-  testimonial?: string;
-  address?: string;
-  openDays?: string;
-  openTime?: string;
-  closeTime?: string;
-  social?: string;
-  notes?: string;
-}
 
 interface AuthenticatedRequest extends Request {
   user?: { id: string; email?: string };
@@ -67,6 +49,52 @@ function generatePlaceId(businessName: string, city: string, state: string): str
     .update(businessName + city + state)
     .digest('hex');
   return `form-${hash}`;
+}
+
+function safeFilename(name: string): string {
+  // Strip path separators and characters unsafe for object storage keys.
+  const base = name.split(/[\\/]/).pop() || 'file';
+  return base.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+}
+
+function randomId(len: number): string {
+  return crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len);
+}
+
+// ============ Multer (multipart upload) ============
+
+const PHOTO_FIELD = 'photos';
+const MAX_PHOTOS = 20;
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+
+// We accept slightly more than MAX_PHOTOS at the multer layer, then slice in
+// the route handler. This way clients sending too many files don't get a hard
+// error — the excess is silently dropped (matching the client-side cap).
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { files: MAX_PHOTOS + 5, fileSize: MAX_PHOTO_BYTES },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  },
+});
+
+function uploadPhotos(req: Request, res: Response, next: NextFunction): void {
+  upload.array(PHOTO_FIELD)(req, res, (err: unknown) => {
+    if (err) {
+      const code = (err as { code?: string }).code;
+      if (code === 'LIMIT_FILE_COUNT' || code === 'LIMIT_UNEXPECTED_FILE') {
+        next();
+        return;
+      }
+      next(err);
+      return;
+    }
+    next();
+  });
 }
 
 // ============ Auth Middleware ============
@@ -106,10 +134,14 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.post('/api/onboard', async (req: Request<object, object, OnboardingBody>, res: Response) => {
-  const { businessName, city, state, phone, category } = req.body;
+app.post('/api/onboard', uploadPhotos, async (req: Request, res: Response) => {
+  const body = req.body as Record<string, string | string[] | undefined>;
+  const businessName = typeof body.businessName === 'string' ? body.businessName : undefined;
+  const city = typeof body.city === 'string' ? body.city : undefined;
+  const state = typeof body.state === 'string' ? body.state : undefined;
+  const phone = typeof body.phone === 'string' ? body.phone : undefined;
+  const category = typeof body.category === 'string' ? body.category : undefined;
 
-  // Validate required fields
   if (!businessName) {
     res.status(400).json({ error: 'Missing required field: businessName' });
     return;
@@ -132,21 +164,102 @@ app.post('/api/onboard', async (req: Request<object, object, OnboardingBody>, re
   const prospect: Prospect = {
     place_id: placeId,
     name: businessName,
-    phone: phone,
+    phone,
     score: 60,
     status: 'new',
     source: 'form',
-    city: city,
+    city,
     category: category || 'general',
   };
 
   try {
     await upsertProspect(prospect);
-    res.status(200).json({ success: true, placeId });
   } catch (error) {
     console.error('Failed to upsert prospect:', error);
     res.status(500).json({ error: 'Internal server error' });
+    return;
   }
+
+  // Captions arrive as a parallel array. Multer/express-formidable parse repeated
+  // form fields into either a string (one entry) or string[] (many entries).
+  const rawCaptions = body['captions[]'] ?? body.captions;
+  const captions: string[] = Array.isArray(rawCaptions)
+    ? rawCaptions
+    : typeof rawCaptions === 'string'
+      ? [rawCaptions]
+      : [];
+
+  interface UploadedFile {
+    originalname: string;
+    buffer: Buffer;
+    mimetype: string;
+    size: number;
+  }
+  // multer attaches `files` to the request; without the multer types in scope
+  // (e.g. before `npm install`) Express's Request type doesn't know about it.
+  const allFiles = ((req as unknown as { files?: UploadedFile[] }).files) ?? [];
+  const files = allFiles.slice(0, MAX_PHOTOS);
+  const uploadedKeys: string[] = [];
+  const insertedPhotoIds: number[] = [];
+  const photoErrors: { fileName: string; error: string }[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const key = `prospects/${placeId}/${Date.now()}-${randomId(6)}-${safeFilename(file.originalname)}`;
+    let uploadedKey: string | null = null;
+    try {
+      const result = await storage.upload(key, file.buffer, file.mimetype);
+      uploadedKey = result.key;
+      const row = await insertProspectPhoto({
+        prospect_place_id: placeId,
+        storage_key: result.key,
+        public_url: result.publicUrl,
+        file_name: file.originalname,
+        mime_type: file.mimetype,
+        size_bytes: file.size,
+        caption: captions[i] ?? '',
+        sort_order: i,
+      });
+      uploadedKeys.push(result.key);
+      insertedPhotoIds.push(row.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Photo upload failed for ${file.originalname}:`, error);
+      photoErrors.push({ fileName: file.originalname, error: message });
+
+      // If the storage upload succeeded but the DB insert failed, the storage
+      // object is orphaned — include it in the rollback set.
+      const keysToDelete = [...uploadedKeys];
+      if (uploadedKey && !uploadedKeys.includes(uploadedKey)) {
+        keysToDelete.push(uploadedKey);
+      }
+
+      for (const k of keysToDelete) {
+        try {
+          await storage.delete(k);
+        } catch (delErr) {
+          console.error(`Rollback delete failed for ${k}:`, delErr);
+        }
+      }
+      for (const id of insertedPhotoIds) {
+        try {
+          await deleteProspectPhoto(id);
+        } catch (delErr) {
+          console.error(`Rollback DB delete failed for photo ${id}:`, delErr);
+        }
+      }
+
+      res.status(207).json({
+        success: true,
+        placeId,
+        photoCount: 0,
+        photoErrors,
+      });
+      return;
+    }
+  }
+
+  res.status(200).json({ success: true, placeId, photoCount: uploadedKeys.length });
 });
 
 // ============ Protected Routes ============
@@ -174,6 +287,46 @@ app.get('/api/prospects/stats', authMiddleware, async (_req: AuthenticatedReques
     res.status(200).json(stats);
   } catch (error) {
     console.error('Failed to get prospect stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/prospects/:id/photos', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const photos = await getProspectPhotos(id);
+    res.status(200).json(photos);
+  } catch (error) {
+    console.error('Failed to get prospect photos:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/prospects/:id/photos/:photoId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id, photoId } = req.params;
+  const photoIdNum = parseInt(photoId, 10);
+  if (Number.isNaN(photoIdNum)) {
+    res.status(400).json({ error: 'Invalid photoId' });
+    return;
+  }
+
+  try {
+    const photo = await getProspectPhotoById(photoIdNum);
+    if (!photo || photo.prospect_place_id !== id) {
+      res.status(404).json({ error: 'Photo not found' });
+      return;
+    }
+
+    await deleteProspectPhoto(photoIdNum);
+    try {
+      await storage.delete(photo.storage_key);
+    } catch (storageErr) {
+      // The DB row is already gone; log the orphan and still report success.
+      console.error(`Failed to delete storage object ${photo.storage_key}:`, storageErr);
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Failed to delete prospect photo:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
