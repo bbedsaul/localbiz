@@ -9,6 +9,7 @@
     "dev": "ts-node-esm src/scheduler.ts",
     "api": "ts-node-esm src/api.ts",
     "cli": "ts-node-esm src/cli.ts",
+    "cleanup:test": "ts-node-esm src/cleanup-test-prospects.ts",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "lint": "eslint src/"
   },
