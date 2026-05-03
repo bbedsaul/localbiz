@@ -253,7 +253,8 @@ function Dashboard() {
 function App() {
   // Public onboarding route — bypasses auth so prospects can submit the form.
   if (typeof window !== 'undefined' && window.location.pathname === '/onboard') {
-    return <OnboardingForm />;
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    return <OnboardingForm apiEndpoint={`${apiBase}/api/onboard`} />;
   }
 
   return (
