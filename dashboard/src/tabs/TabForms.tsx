@@ -122,7 +122,19 @@ export function TabForms({ onBuild }: { onBuild: (prospect: { name: string }) =>
 
   return (
     <div>
-      <Head title="Onboarding Forms" sub="Review and process business onboarding submissions" />
+      <Head
+        title="Onboarding Forms"
+        sub="Review and process business onboarding submissions"
+        action={
+          <Btn
+            size="sm"
+            variant="primary"
+            onClick={() => window.open('/onboard', '_blank', 'noopener')}
+          >
+            Open submission form &rarr;
+          </Btn>
+        }
+      />
 
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
