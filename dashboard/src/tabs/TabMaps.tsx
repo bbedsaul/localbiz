@@ -1,17 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { T } from '../tokens';
-import { Badge, Btn, StatPill, Head, Modal, FSelect, Card } from '../components/shared';
+import { Badge, Btn, StatPill, Head, Modal, FSelect, FInput, Card } from '../components/shared';
 import { SkeletonRows, ErrorBanner, ToastContainer, ToastMessage } from '../components/Loading';
 import { api, ApiError } from '../lib/api';
 
 const CATEGORIES = [
   'Auto Repair', 'Plumber', 'Dry Cleaner', 'Landscaper', 'Bakery', 'HVAC',
   'Restaurant', 'Dental', 'Fitness', 'Retail', 'Salon', 'Cleaning'
-];
-
-const CITIES = [
-  'Akron OH', 'Canton OH', 'Dayton OH', 'Toledo OH', 'Columbus OH',
-  'Cleveland OH', 'Youngstown OH', 'Cincinnati OH'
 ];
 
 const SCHEDULES = [
@@ -232,7 +227,7 @@ export function TabMaps() {
         <Modal title="New Search" onClose={() => setShowModal(false)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <FSelect label="Category" value={newCategory} onChange={setNewCategory} options={CATEGORIES} />
-            <FSelect label="City" value={newCity} onChange={setNewCity} options={CITIES} />
+            <FInput label="City" value={newCity} onChange={setNewCity} placeholder="e.g. Akron OH or Austin TX" hint="City and state — passed to Google Places" />
             <FSelect label="Schedule" value={newSchedule} onChange={setNewSchedule} options={SCHEDULES} />
             <div style={{ marginTop: 8 }}>
               <Btn variant="primary" onClick={addSearch}>Create Search</Btn>
