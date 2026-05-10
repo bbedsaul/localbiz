@@ -71,6 +71,7 @@ export function TabMaps() {
   const [newSchedule, setNewSchedule] = useState('');
   const [runningIds, setRunningIds] = useState<Set<number>>(new Set());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'info') => {
     const id = Date.now();
@@ -148,11 +149,19 @@ export function TabMaps() {
   };
 
   const addSearch = async () => {
-    if (!newCategory || !newCity || !newSchedule) return;
+    setModalError(null);
+    const missing: string[] = [];
+    if (!newCategory) missing.push('Category');
+    if (!newCity.trim()) missing.push('City');
+    if (!newSchedule) missing.push('Schedule');
+    if (missing.length > 0) {
+      setModalError(`Please fill in: ${missing.join(', ')}`);
+      return;
+    }
     try {
       const newSearchData = await api.post<ApiSearch>('/api/searches', {
         category: newCategory,
-        city: newCity,
+        city: newCity.trim(),
         schedule: newSchedule,
       });
       setSearches([...searches, mapApiSearch(newSearchData)]);
@@ -161,8 +170,13 @@ export function TabMaps() {
       setNewCity('');
       setNewSchedule('');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to create search');
+      setModalError(err instanceof ApiError ? err.message : 'Failed to create search');
     }
+  };
+
+  const openNewSearchModal = () => {
+    setModalError(null);
+    setShowModal(true);
   };
 
   return (
@@ -170,7 +184,7 @@ export function TabMaps() {
       <Head
         title="Scheduled Searches"
         sub="Configure automated Google Maps searches for prospects"
-        action={<Btn variant="primary" onClick={() => setShowModal(true)}>+ New Search</Btn>}
+        action={<Btn variant="primary" onClick={openNewSearchModal}>+ New Search</Btn>}
       />
 
       {/* Stats row */}
@@ -193,7 +207,7 @@ export function TabMaps() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <Badge status={search.status} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500 }}>
+                  <div style={{ fontWeight: 500, color: T.text }}>
                     {search.category} <span style={{ color: T.muted }}>&middot;</span> {search.city}
                   </div>
                   <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
@@ -229,6 +243,18 @@ export function TabMaps() {
             <FSelect label="Category" value={newCategory} onChange={setNewCategory} options={CATEGORIES} />
             <FInput label="City" value={newCity} onChange={setNewCity} placeholder="e.g. Akron OH or Austin TX" hint="City and state — passed to Google Places" />
             <FSelect label="Schedule" value={newSchedule} onChange={setNewSchedule} options={SCHEDULES} />
+            {modalError && (
+              <div style={{
+                padding: '8px 12px',
+                background: T.amberDim,
+                border: `1px solid ${T.amber}`,
+                borderRadius: 6,
+                color: T.amber,
+                fontSize: 13,
+              }}>
+                {modalError}
+              </div>
+            )}
             <div style={{ marginTop: 8 }}>
               <Btn variant="primary" onClick={addSearch}>Create Search</Btn>
             </div>
