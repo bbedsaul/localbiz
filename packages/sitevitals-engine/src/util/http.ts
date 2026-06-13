@@ -1,7 +1,13 @@
 import type { RedirectHop } from '../types.js';
+import { assertPublicUrl } from './ssrf.js';
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 export const USER_AGENT = 'SiteVitalsBot/0.1 (+https://sitevitals.app)';
+
+/** Pass `{ allowPrivate: true }` only in tests that target a local server. */
+export interface FetchOpts {
+  allowPrivate?: boolean;
+}
 
 /** Prepend https:// when the user typed a bare domain. */
 export function normalizeUrl(input: string): string {
@@ -16,7 +22,13 @@ export async function fetchWithTimeout(
   url: string,
   init: RequestInit = {},
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  opts: FetchOpts = {},
 ): Promise<Response> {
+  // SSRF guard: refuse private/reserved targets before connecting. Covers
+  // redirect hops too, since followRedirects re-enters this function per hop.
+  if (!opts.allowPrivate) {
+    await assertPublicUrl(url);
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -47,12 +59,13 @@ export async function followRedirects(
   url: string,
   maxHops = 10,
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  opts: FetchOpts = {},
 ): Promise<RedirectTrace> {
   const hops: RedirectHop[] = [];
   let current = url;
 
   for (let i = 0; i <= maxHops; i++) {
-    const response = await fetchWithTimeout(current, { redirect: 'manual' }, timeoutMs);
+    const response = await fetchWithTimeout(current, { redirect: 'manual' }, timeoutMs, opts);
     const location = response.headers.get('location');
     if (response.status >= 300 && response.status < 400 && location) {
       hops.push({ url: current, status: response.status });

@@ -47,7 +47,7 @@ afterAll(async () => {
 
 describe('crawlSite against a local fixture site', () => {
   it('collects pages, broken links, and hygiene signals', async () => {
-    const crawl = await crawlSite(baseUrl);
+    const crawl = await crawlSite(baseUrl, { allowPrivate: true });
 
     // /, /about.html, /services.html are HTML; /missing.html 404s.
     expect(crawl.pagesCrawled).toBe(3);
@@ -83,7 +83,7 @@ describe('crawlSite against a local fixture site', () => {
   });
 
   it('does not follow external or non-http links', async () => {
-    const crawl = await crawlSite(baseUrl);
+    const crawl = await crawlSite(baseUrl, { allowPrivate: true });
     const crawledUrls = [
       ...crawl.brokenLinks.map((l) => l.url),
       ...crawl.missingTitles,

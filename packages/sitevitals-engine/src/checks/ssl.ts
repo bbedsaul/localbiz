@@ -1,6 +1,7 @@
 import tls from 'node:tls';
 import type { Check, SslRaw } from '../types.js';
 import { DEFAULT_TIMEOUT_MS, normalizeUrl } from '../util/http.js';
+import { assertPublicHost } from '../util/ssrf.js';
 import { runSafely } from '../util/run-safely.js';
 
 const MS_PER_DAY = 86_400_000;
@@ -53,8 +54,9 @@ function handshake(host: string, port: number): Promise<SslRaw> {
 export const sslCheck: Check<SslRaw> = {
   type: 'ssl',
   run: (target) =>
-    runSafely('ssl', () => {
+    runSafely('ssl', async () => {
       const { hostname, port } = new URL(normalizeUrl(target.url));
+      await assertPublicHost(hostname); // SSRF guard before the TLS handshake
       return handshake(hostname, port ? Number(port) : 443);
     }),
 };

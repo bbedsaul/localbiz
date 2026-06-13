@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import type { BrokenLink, Check, CrawlRaw } from '../types.js';
-import { fetchWithTimeout, normalizeUrl } from '../util/http.js';
+import { DEFAULT_TIMEOUT_MS, fetchWithTimeout, normalizeUrl } from '../util/http.js';
 import { errorMessage } from '../util/http.js';
 import { runSafely } from '../util/run-safely.js';
 
@@ -33,7 +33,12 @@ function canonical(url: URL): string {
   return url.toString();
 }
 
-async function fetchPage(url: string, foundOn: string, origin: URL): Promise<PageRecord> {
+async function fetchPage(
+  url: string,
+  foundOn: string,
+  origin: URL,
+  allowPrivate: boolean,
+): Promise<PageRecord> {
   const record: PageRecord = {
     url,
     foundOn,
@@ -51,7 +56,7 @@ async function fetchPage(url: string, foundOn: string, origin: URL): Promise<Pag
 
   let response: Response;
   try {
-    response = await fetchWithTimeout(url);
+    response = await fetchWithTimeout(url, {}, DEFAULT_TIMEOUT_MS, { allowPrivate });
   } catch (err) {
     record.failureReason = errorMessage(err);
     return record;
@@ -105,9 +110,9 @@ async function fetchPage(url: string, foundOn: string, origin: URL): Promise<Pag
   return record;
 }
 
-async function urlExists(url: string): Promise<boolean> {
+async function urlExists(url: string, allowPrivate: boolean): Promise<boolean> {
   try {
-    const response = await fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url, {}, DEFAULT_TIMEOUT_MS, { allowPrivate });
     await response.body?.cancel();
     return response.ok;
   } catch {
@@ -115,7 +120,11 @@ async function urlExists(url: string): Promise<boolean> {
   }
 }
 
-export async function crawlSite(startUrl: string): Promise<CrawlRaw> {
+export async function crawlSite(
+  startUrl: string,
+  opts: { allowPrivate?: boolean } = {},
+): Promise<CrawlRaw> {
+  const allowPrivate = opts.allowPrivate ?? false;
   const origin = new URL(normalizeUrl(startUrl));
   const homepage = canonical(new URL(origin.toString()));
 
@@ -136,7 +145,7 @@ export async function crawlSite(startUrl: string): Promise<CrawlRaw> {
         const next = queue.shift();
         if (!next) break;
         inFlight += 1;
-        void fetchPage(next.url, next.foundOn, origin).then((page) => {
+        void fetchPage(next.url, next.foundOn, origin, allowPrivate).then((page) => {
           pages.push(page);
           for (const link of page.internalLinks) {
             if (visited.size >= MAX_INTERNAL_PAGES + 1) break;
@@ -188,9 +197,9 @@ export async function crawlSite(startUrl: string): Promise<CrawlRaw> {
   const root = origin.origin;
 
   const [hasSitemap, hasRobotsTxt, hasFaviconFile] = await Promise.all([
-    urlExists(`${root}/sitemap.xml`),
-    urlExists(`${root}/robots.txt`),
-    homePage.hasFaviconLink ? Promise.resolve(true) : urlExists(`${root}/favicon.ico`),
+    urlExists(`${root}/sitemap.xml`, allowPrivate),
+    urlExists(`${root}/robots.txt`, allowPrivate),
+    homePage.hasFaviconLink ? Promise.resolve(true) : urlExists(`${root}/favicon.ico`, allowPrivate),
   ]);
 
   return {
