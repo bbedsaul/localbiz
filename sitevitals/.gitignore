@@ -1,9 +1,0 @@
-node_modules/
-dist/
-*.tsbuildinfo
-.env
-out.json
-prev.json
-report.html
-coverage/
-.DS_Store

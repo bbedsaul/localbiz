@@ -1,0 +1,766 @@
+{
+  "engineVersion": "0.1.0",
+  "url": "https://www.radiantplumbing.com",
+  "category": "Plumbing",
+  "city": "Austin",
+  "startedAt": "2026-06-13T00:40:08.763Z",
+  "finishedAt": "2026-06-13T00:40:39.221Z",
+  "durationMs": 30458,
+  "checks": {
+    "uptime": {
+      "type": "uptime",
+      "status": "ok",
+      "ranAt": "2026-06-13T00:40:08.763Z",
+      "durationMs": 759,
+      "raw": {
+        "finalUrl": "https://radiantplumbing.com/",
+        "statusCode": 200,
+        "responseTimeMs": 759,
+        "redirects": [
+          {
+            "url": "https://www.radiantplumbing.com",
+            "status": 301
+          }
+        ],
+        "up": true
+      }
+    },
+    "ssl": {
+      "type": "ssl",
+      "status": "ok",
+      "ranAt": "2026-06-13T00:40:08.786Z",
+      "durationMs": 153,
+      "raw": {
+        "valid": true,
+        "issuer": "Google Trust Services / WE1",
+        "subject": "www.radiantplumbing.com",
+        "validFrom": "2026-04-19T01:22:11.000Z",
+        "validTo": "2026-07-18T02:22:01.000Z",
+        "daysRemaining": 35
+      }
+    },
+    "domain": {
+      "type": "domain",
+      "status": "ok",
+      "ranAt": "2026-06-13T00:40:08.786Z",
+      "durationMs": 441,
+      "raw": {
+        "supported": true,
+        "domain": "radiantplumbing.com",
+        "registrar": "Go Canada Domains, LLC",
+        "expiresAt": "2026-12-16T19:44:33.000Z",
+        "daysRemaining": 186
+      }
+    },
+    "crawl": {
+      "type": "crawl",
+      "status": "ok",
+      "ranAt": "2026-06-13T00:40:08.787Z",
+      "durationMs": 30434,
+      "raw": {
+        "pagesCrawled": 51,
+        "brokenLinks": [],
+        "missingTitles": [],
+        "duplicateTitles": [
+          {
+            "title": "Plumbing, HVAC, And Electrical Services - Radiant",
+            "pages": [
+              "https://www.radiantplumbing.com/",
+              "https://radiantplumbing.com/"
+            ]
+          }
+        ],
+        "missingMetaDescriptions": [],
+        "duplicateMetaDescriptions": [
+          {
+            "description": "Since 1999, Radiant provides expert plumbing, heating, cooling, & electrical services for homes across Austin & San Antonio, TX.",
+            "pages": [
+              "https://www.radiantplumbing.com/",
+              "https://radiantplumbing.com/"
+            ]
+          }
+        ],
+        "imagesMissingAlt": [
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://www.radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/The-Austin-Chronicles-Best-of-Austin-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-Plumbing-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-AC-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/austin/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/The-Austin-Chronicles-Best-of-Austin-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-Plumbing-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-AC-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/zilker-theater-150x32.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/WondersWorries_Logo_Stacked-Color-150x107.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/troops-to-trades-150x122.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/the-settlement-home-for-children-150x114.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/the-refuge-150x90.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/shadow-cats-rescue-150x33.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/safe-in-austin-150x47.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/lean-on-me-150x75.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/austin-pets-alive-275x300-1-138x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/catalyst-teen-center-217x300-1-109x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/central-texas-spca-300x294-1-150x147.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/charity-water-150x80.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/dell-childrens-768x294-1-150x57.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/doc-gale-food-drive-150x79.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/helping-hand-home-150x43.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/joyful-horse-restoration-ranch-300x300-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/austin-disaster-relief-150x91.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/about-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/austin-community-foundation-logo-150x26.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/locations/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/The-Austin-Chronicles-Best-of-Austin-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-Plumbing-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-AC-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/san-antonio/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/reviews/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/radiant-tech-truck-1600.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/careers/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/radiant-workplace-1-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/contact-us/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/The-Austin-Chronicles-Best-of-Austin-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-Plumbing-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-AC-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/heating-air/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/financing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/blog/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/bigstock-Basement-Drain-4310642-2.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/blog/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/typical-texas-street-homes-blog-preview-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/ATX_Guarantee_Logo_LG.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/guarantee/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-1-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/indoor-air-quality/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/leak-detection/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/leak-detection/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/burst-pipe-repair/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/burst-pipe-repair/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/The-Austin-Chronicles-Best-of-Austin-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Texas-Edition-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/RecognizeGood-Ethics-In-Business-Finalist-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Inc.-5000-Fastest-Growing-Companies-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-Plumbing-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Expertise.com-AC-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journals-Best-Places-To-Work-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-Business-Journal-Fast-50-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Top-Workplaces-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Austin-American-Statesmans-Best-Of-The-Best-150x150.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/tankless/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/radiant-hand-washing-mom-and-daughter-scaled-1-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/tankless/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Radiant-Blog-Jan-2020-scaled-2.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/tankless/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Tankless-Water-Heater-Benefits-e1511287909239-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/tankless/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Technician-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/repair/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Plumbing-Visit-1.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/emergency-plumbers/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/emergency-plumbers/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/maintenance/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Plumbing-Visit-1.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/frozen-pipe-repair/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/frozen-pipe-repair/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Water-Testing-560x560-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/radiant-plumbing-spigot2-1.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/inspection/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/inspection/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/gas-lines/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/gas-lines/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/water-heaters/installation/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/Plumbing-Visit-1.png"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/repiping/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/aerial-suburban-neighborhood-1125.jpg"
+          },
+          {
+            "page": "https://radiantplumbing.com/plumbing/repiping/",
+            "src": "https://radiantplumbing.com/wp-content/uploads/overhead-view-neighborhood-yards-1125.jpg"
+          }
+        ],
+        "totalImages": 653,
+        "hasSitemap": false,
+        "hasRobotsTxt": true,
+        "hasFavicon": true,
+        "hasViewportMeta": true
+      }
+    },
+    "pagespeed": {
+      "type": "pagespeed",
+      "status": "skipped",
+      "ranAt": "2026-06-13T00:40:08.788Z",
+      "durationMs": 0,
+      "raw": null,
+      "error": "PAGESPEED_API_KEY (or GOOGLE_API_KEY) not set"
+    },
+    "safebrowsing": {
+      "type": "safebrowsing",
+      "status": "skipped",
+      "ranAt": "2026-06-13T00:40:08.788Z",
+      "durationMs": 0,
+      "raw": null,
+      "error": "SAFE_BROWSING_API_KEY (or GOOGLE_API_KEY) not set"
+    },
+    "httpsEnforced": {
+      "type": "httpsEnforced",
+      "status": "ok",
+      "ranAt": "2026-06-13T00:40:08.788Z",
+      "durationMs": 993,
+      "raw": {
+        "httpsSupported": true,
+        "httpRedirectsToHttps": true,
+        "finalUrl": "https://radiantplumbing.com/",
+        "mixedContentCount": 0,
+        "mixedContentSamples": []
+      }
+    },
+    "localVisibility": {
+      "type": "localVisibility",
+      "status": "skipped",
+      "ranAt": "2026-06-13T00:40:08.788Z",
+      "durationMs": 0,
+      "raw": null,
+      "error": "no SERP provider configured (set DATAFORSEO_LOGIN/DATAFORSEO_PASSWORD, or SERP_PROVIDER=serpapi with SERPAPI_KEY)"
+    },
+    "napConsistency": {
+      "type": "napConsistency",
+      "status": "skipped",
+      "ranAt": "2026-06-13T00:40:08.788Z",
+      "durationMs": 0,
+      "raw": null,
+      "error": "no listing platform reachable: GOOGLE_PLACES_API_KEY (or GOOGLE_API_KEY) not set; YELP_API_KEY not set; FACEBOOK_ACCESS_TOKEN not set"
+    }
+  },
+  "scores": {
+    "categories": [
+      {
+        "id": "uptime",
+        "label": "Uptime & availability",
+        "weight": 0.25,
+        "score": 100
+      },
+      {
+        "id": "performance",
+        "label": "Performance",
+        "weight": 0.15,
+        "score": null
+      },
+      {
+        "id": "mobile",
+        "label": "Mobile friendliness",
+        "weight": 0.1,
+        "score": 70
+      },
+      {
+        "id": "localSearch",
+        "label": "Local search visibility",
+        "weight": 0.2,
+        "score": null
+      },
+      {
+        "id": "listings",
+        "label": "Listing consistency",
+        "weight": 0.15,
+        "score": null
+      },
+      {
+        "id": "hygiene",
+        "label": "Content & technical hygiene",
+        "weight": 0.1,
+        "score": 83
+      },
+      {
+        "id": "security",
+        "label": "Security & trust",
+        "weight": 0.05,
+        "score": 100
+      }
+    ],
+    "composite": 90.6,
+    "grade": "A"
+  }
+}
