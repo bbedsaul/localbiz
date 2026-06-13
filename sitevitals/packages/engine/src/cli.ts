@@ -1,13 +1,23 @@
 #!/usr/bin/env node
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
+import { createEmailProvider } from './delivery/email-provider.js';
 import { suggestKeywords } from './keywords.js';
+import { narrate } from './report/narrate.js';
+import { prioritizeIssues } from './report/prioritize.js';
+import { renderReportEmail } from './report/template.js';
+import { computeTrend } from './report/trend.js';
 import { runScan } from './runner.js';
 import type { CheckResult, ScanResult } from './types.js';
+import { normalizeUrl } from './util/http.js';
+import { nameFromDomain } from './util/nap.js';
 
-const USAGE = `Usage: pnpm engine scan <url> [options]
+const USAGE = `Usage:
+  pnpm engine scan <url> [options]
+  pnpm engine report <scan.json> [--to email@x.com] [--business "Joe's HVAC"]
+                     [--previous prev-scan.json] [--out report.html]
 
-Runs all SiteVitals checks against <url> and prints a summary.
+scan: runs all SiteVitals checks against <url> and prints a summary.
   --json <file>     also write the full ScanResult JSON to <file>
   --category        business category ("HVAC"); with --city, used to suggest keywords
   --city            business city ("Austin"); pass "Austin,Texas,United States" for
@@ -15,9 +25,17 @@ Runs all SiteVitals checks against <url> and prints a summary.
   --name            business name for listing lookups (default: derived from domain)
   --keywords        comma-separated tracked keywords, max 5 ("hvac repair austin,...")
 
+report: turns a ScanResult JSON into the monthly report-card email.
+  --to <email>      send via Resend (needs RESEND_API_KEY)
+  --business        business name shown in the report (default: derived from domain)
+  --previous        previous period's scan JSON, used to compute the trend
+  --out <file>      write the rendered HTML for preview
+
 Optional env: PAGESPEED_API_KEY, SAFE_BROWSING_API_KEY (GOOGLE_API_KEY covers both),
 DATAFORSEO_LOGIN/DATAFORSEO_PASSWORD (or SERP_PROVIDER=serpapi + SERPAPI_KEY),
 GOOGLE_PLACES_API_KEY, YELP_API_KEY, FACEBOOK_ACCESS_TOKEN.
+For reports: ANTHROPIC_API_KEY (narration; falls back to a non-AI template),
+RESEND_API_KEY + REPORT_FROM_EMAIL (delivery).
 Checks needing a missing key are reported as "skipped".`;
 
 function bestPosition(rankings: { position: number | null }[]): string {
@@ -105,6 +123,82 @@ function summarize(result: ScanResult): string {
   return lines.join('\n');
 }
 
+async function reportCommand(
+  scanPath: string,
+  values: { to?: string; business?: string; previous?: string; out?: string },
+): Promise<number> {
+  const scan = JSON.parse(await readFile(scanPath, 'utf8')) as ScanResult;
+  if (!scan.url || !scan.scores || !scan.checks) {
+    console.error(`sitevitals: ${scanPath} does not look like a ScanResult JSON`);
+    return 1;
+  }
+  const previous = values.previous
+    ? (JSON.parse(await readFile(values.previous, 'utf8')) as ScanResult)
+    : null;
+
+  const business =
+    values.business ?? nameFromDomain(new URL(normalizeUrl(scan.url)).hostname) ?? scan.url;
+  const period = new Date(scan.finishedAt).toLocaleString('en-US', { month: 'long' });
+  const trend = previous ? computeTrend(scan, previous) : null;
+  const { wins, issues } = prioritizeIssues(scan);
+
+  console.log(`Generating ${period} report for ${business} (${issues.length} issue(s) found) …`);
+  const started = Date.now();
+  const narration = await narrate({
+    business,
+    period,
+    grade: scan.scores.grade,
+    composite: scan.scores.composite,
+    trend,
+    wins,
+    issues: issues.slice(0, 3),
+  });
+  console.log(
+    `Narration: ${narration.source}${narration.model ? ` (${narration.model})` : ''} in ${((Date.now() - started) / 1000).toFixed(1)}s${narration.reason ? ` — ${narration.reason}` : ''}`,
+  );
+
+  const email = renderReportEmail({
+    business,
+    period,
+    grade: scan.scores.grade,
+    composite: scan.scores.composite,
+    trend,
+    narrative: narration.narrative,
+    categories: scan.scores.categories,
+    url: scan.url,
+  });
+  console.log(`Subject: ${email.subject}`);
+
+  if (values.out) {
+    await writeFile(values.out, email.html, 'utf8');
+    console.log(`HTML preview written to ${values.out}`);
+  }
+
+  if (values.to) {
+    const provider = createEmailProvider();
+    if (!provider) {
+      console.error('sitevitals: cannot send — RESEND_API_KEY not set');
+      return 1;
+    }
+    const { id } = await provider.send({
+      to: values.to,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+      tags: {
+        business_id: business,
+        period: scan.finishedAt.slice(0, 7),
+      },
+    });
+    console.log(`Sent via ${provider.name} to ${values.to} (id: ${id})`);
+  }
+
+  if (!values.out && !values.to) {
+    console.log('\n' + email.text);
+  }
+  return 0;
+}
+
 async function main(): Promise<number> {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
@@ -115,15 +209,27 @@ async function main(): Promise<number> {
       city: { type: 'string' },
       name: { type: 'string' },
       keywords: { type: 'string' },
+      to: { type: 'string' },
+      business: { type: 'string' },
+      previous: { type: 'string' },
+      out: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
 
-  const [command, url] = positionals;
-  if (values.help || command !== 'scan' || !url) {
+  const [command, target] = positionals;
+  if (values.help || !command || !target) {
     console.log(USAGE);
     return values.help ? 0 : 1;
   }
+  if (command === 'report') {
+    return reportCommand(target, values);
+  }
+  if (command !== 'scan') {
+    console.log(USAGE);
+    return 1;
+  }
+  const url = target;
 
   let keywords = values.keywords
     ?.split(',')

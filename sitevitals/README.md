@@ -18,9 +18,20 @@ plain-English monthly report card.
 pnpm install
 pnpm engine scan https://example.com --json out.json
 pnpm engine scan example.com --category "HVAC" --city "Austin"
+pnpm engine report out.json --business "Joe's HVAC" --out report.html
+pnpm engine report out.json --to owner@example.com --previous last-month.json
 pnpm test
 pnpm lint
 ```
+
+`scan` + `report` together are the full concierge toolchain: scan a business,
+generate the plain-English report-card email, and deliver it via Resend.
+Narration uses the Claude API (`ANTHROPIC_API_KEY`) with a strict
+numbers-come-from-the-scan contract — responses are zod-validated, retried
+once, and replaced by a deterministic non-AI template if validation fails or
+no key is set. Issues are ranked by a static business-impact map (downtime >
+SSL expiry > not ranking > NAP mismatch > slow LCP > broken links > missing
+meta > missing alt text).
 
 ## Engine checks
 
