@@ -4,13 +4,20 @@ WORKDIR /app
 RUN corepack enable
 # packageManager in the root package.json pins pnpm to a Node 20-compatible version.
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
+# All workspace package.jsons are needed for a frozen-lockfile install.
+COPY packages/core/package.json packages/core/
+COPY packages/prospector/package.json packages/prospector/
 COPY packages/sitevitals-engine/package.json packages/sitevitals-engine/
 COPY packages/sitevitals-worker/package.json packages/sitevitals-worker/
 COPY packages/web/package.json packages/web/
 RUN pnpm install --frozen-lockfile
+# Build core → engine → worker (worker depends on engine depends on @platform/core).
+COPY packages/core packages/core
 COPY packages/sitevitals-engine packages/sitevitals-engine
 COPY packages/sitevitals-worker packages/sitevitals-worker
-RUN pnpm --filter sitevitals-engine build && pnpm --filter sitevitals-worker build
+RUN pnpm --filter @platform/core build \
+  && pnpm --filter sitevitals-engine build \
+  && pnpm --filter sitevitals-worker build
 # Produce a self-contained prod deployment (flattened node_modules incl. the
 # built sitevitals-engine workspace dep). Avoids hand-copying pnpm symlinks.
 RUN CI=true pnpm --filter sitevitals-worker deploy --prod --legacy /app/out
