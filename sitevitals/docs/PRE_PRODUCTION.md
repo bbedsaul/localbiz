@@ -88,3 +88,16 @@ Status legend: ☐ todo · ◑ partial / in progress · ☑ done (kept here for 
 - ☐ Error monitoring (Sentry) live on both web + worker. [#36](https://github.com/bbedsaul/localbiz/issues/36)
 - ☐ Landing/marketing page production-ready. [#27](https://github.com/bbedsaul/localbiz/issues/27)
 - ☐ First 10-customer validation outreach (concierge `engine scan` + `engine report`). [#37](https://github.com/bbedsaul/localbiz/issues/37)
+
+## 10. E6 — Billing, Hardening & Launch (epic [#39](https://github.com/bbedsaul/localbiz/issues/39))
+
+New work filed from the E6 epic (beyond the items already listed above):
+
+- ☐ Annual billing option for Solo/Pro (2 months free). [#40](https://github.com/bbedsaul/localbiz/issues/40)
+- ☐ Pro weekly mini-report — build + gate in the worker. [#41](https://github.com/bbedsaul/localbiz/issues/41)
+- ☐ Subscription lifecycle in the worker: trialing/active/past_due/canceled (grace + win-back). [#42](https://github.com/bbedsaul/localbiz/issues/42)
+- ☐ List-Unsubscribe header on email + Resend suppression-list handling. [#43](https://github.com/bbedsaul/localbiz/issues/43)
+- ☐ **SSRF protection** on engine fetches — block private/loopback/metadata IPs (security-critical). [#44](https://github.com/bbedsaul/localbiz/issues/44)
+- ☐ Input validation (zod) across web API routes + server actions. [#45](https://github.com/bbedsaul/localbiz/issues/45)
+- ☐ External uptime monitor on our own web + worker. [#46](https://github.com/bbedsaul/localbiz/issues/46)
+- ☐ Launch runbook doc + founding-customer announcement email. [#47](https://github.com/bbedsaul/localbiz/issues/47)
