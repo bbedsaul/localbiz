@@ -6,6 +6,8 @@ import type {
   DomainRaw,
   HttpsEnforcedRaw,
   LetterGrade,
+  LocalVisibilityRaw,
+  NapConsistencyRaw,
   PagespeedRaw,
   ScanResult,
   ScoreBreakdown,
@@ -143,6 +145,59 @@ export function scoreSecurityCategory(
   return clamp(score);
 }
 
+/** Spec buckets: position 1–3 → 100, 4–10 → 75, 11–20 → 50, 21–50 → 25, absent → 0. */
+export function positionScore(position: number | null): number {
+  if (position === null || position > 50) return 0;
+  if (position <= 3) return 100;
+  if (position <= 10) return 75;
+  if (position <= 20) return 50;
+  return 25;
+}
+
+/** C4 — average keyword position score, +10 map-pack bonus, capped at 100. */
+export function scoreLocalSearchCategory(
+  localVisibility: CheckResult<LocalVisibilityRaw> | undefined,
+): number | null {
+  const lv = ok(localVisibility);
+  if (!lv || lv.rankings.length === 0) return null;
+  const average =
+    lv.rankings.reduce((sum, r) => sum + positionScore(r.position), 0) / lv.rankings.length;
+  return clamp(average + (lv.inMapPack ? 10 : 0));
+}
+
+/**
+ * C5 — NAP consistency across found listings, plus presence: each platform
+ * that was queryable but has no listing costs 15 points. With only one
+ * listing found nothing can be compared, so the base is a neutral 70.
+ */
+export function scoreListingsCategory(
+  napConsistency: CheckResult<NapConsistencyRaw> | undefined,
+  fieldWeights: Record<string, number> = { phone: 0.3, address: 0.3, name: 0.25, hours: 0.15 },
+): number | null {
+  const nap = ok(napConsistency);
+  if (!nap) return null;
+
+  const queryable = nap.listings.filter((l) => !l.unavailableReason);
+  if (queryable.length === 0) return null;
+
+  const notFoundCount = queryable.filter((l) => !l.found).length;
+  if (nap.foundCount === 0) return 0;
+
+  let base: number;
+  const comparedWeight = nap.comparedFields.reduce((sum, f) => sum + (fieldWeights[f] ?? 0), 0);
+  if (comparedWeight > 0) {
+    const mismatchedWeight = nap.mismatches.reduce(
+      (sum, m) => sum + (fieldWeights[m.field] ?? 0),
+      0,
+    );
+    base = 100 * (1 - mismatchedWeight / comparedWeight);
+  } else {
+    base = 70;
+  }
+
+  return clamp(base - 15 * notFoundCount);
+}
+
 export function letterGrade(composite: number): LetterGrade {
   if (composite >= 90) return 'A';
   if (composite >= 80) return 'B';
@@ -169,8 +224,8 @@ export function scoreScan(checks: ScanResult['checks']): ScoreBreakdown {
     uptime: scoreUptimeCategory(checks.uptime, checks.ssl, checks.domain),
     performance: scorePerformanceCategory(checks.pagespeed),
     mobile: scoreMobileCategory(checks.pagespeed, checks.crawl),
-    localSearch: null, // not measured by the engine CLI (SERP checks live in the worker)
-    listings: null, // not measured by the engine CLI
+    localSearch: scoreLocalSearchCategory(checks.localVisibility),
+    listings: scoreListingsCategory(checks.napConsistency),
     hygiene: scoreHygieneCategory(checks.crawl),
     security: scoreSecurityCategory(checks.httpsEnforced, checks.safebrowsing),
   };

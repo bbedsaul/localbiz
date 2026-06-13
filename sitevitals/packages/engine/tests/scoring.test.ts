@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   compositeScore,
   letterGrade,
+  positionScore,
   scoreHygieneCategory,
+  scoreListingsCategory,
+  scoreLocalSearchCategory,
   scoreMobileCategory,
   scorePerformanceCategory,
   scoreScan,
@@ -14,6 +17,9 @@ import type {
   CheckType,
   CrawlRaw,
   HttpsEnforcedRaw,
+  Listing,
+  LocalVisibilityRaw,
+  NapConsistencyRaw,
   PagespeedRaw,
   ScanResult,
   SslRaw,
@@ -264,6 +270,167 @@ describe('scoreSecurityCategory', () => {
   });
 });
 
+function rank(keyword: string, position: number | null, mapPack = false): LocalVisibilityRaw['rankings'][number] {
+  return { keyword, position, mapPack, topCompetitors: ['competitor-a.com', 'competitor-b.com'] };
+}
+
+function visibility(rankings: LocalVisibilityRaw['rankings']): LocalVisibilityRaw {
+  return {
+    provider: 'dataforseo',
+    location: 'Austin,Texas,United States',
+    rankings,
+    inMapPack: rankings.some((r) => r.mapPack),
+    serpCostUsd: 0.006,
+  };
+}
+
+function foundListing(source: Listing['source'], overrides: Partial<Listing> = {}): Listing {
+  return {
+    source,
+    found: true,
+    name: "Joe's HVAC",
+    address: '123 Main St',
+    phone: '+15125551234',
+    hours: null,
+    rating: 4.8,
+    reviewCount: 100,
+    url: null,
+    ...overrides,
+  };
+}
+
+function napRaw(listings: Listing[], mismatches: NapConsistencyRaw['mismatches'], comparedFields: NapConsistencyRaw['comparedFields']): NapConsistencyRaw {
+  return {
+    businessName: "Joe's HVAC",
+    listings,
+    comparedFields,
+    mismatches,
+    foundCount: listings.filter((l) => l.found).length,
+  };
+}
+
+describe('positionScore buckets', () => {
+  it('maps spec boundaries exactly', () => {
+    expect(positionScore(1)).toBe(100);
+    expect(positionScore(3)).toBe(100);
+    expect(positionScore(4)).toBe(75);
+    expect(positionScore(10)).toBe(75);
+    expect(positionScore(11)).toBe(50);
+    expect(positionScore(20)).toBe(50);
+    expect(positionScore(21)).toBe(25);
+    expect(positionScore(50)).toBe(25);
+    expect(positionScore(null)).toBe(0);
+  });
+});
+
+describe('scoreLocalSearchCategory', () => {
+  it('averages across keywords', () => {
+    const lv = visibility([rank('a', 2), rank('b', 7), rank('c', null)]);
+    // (100 + 75 + 0) / 3 = 58.33 → 58
+    expect(scoreLocalSearchCategory(result('localVisibility', lv))).toBe(58);
+  });
+
+  it('adds a +10 map-pack bonus capped at 100', () => {
+    const bonus = visibility([rank('a', 5, true), rank('b', 15)]);
+    // (75 + 50)/2 = 62.5 + 10 = 72.5 → 73
+    expect(scoreLocalSearchCategory(result('localVisibility', bonus))).toBe(73);
+
+    const capped = visibility([rank('a', 1, true), rank('b', 2)]);
+    expect(scoreLocalSearchCategory(result('localVisibility', capped))).toBe(100);
+  });
+
+  it('scores all-absent keywords 0 (map pack can still rescue 10)', () => {
+    expect(scoreLocalSearchCategory(result('localVisibility', visibility([rank('a', null)])))).toBe(0);
+    expect(
+      scoreLocalSearchCategory(result('localVisibility', visibility([rank('a', null, true)]))),
+    ).toBe(10);
+  });
+
+  it('returns null when skipped or empty', () => {
+    expect(scoreLocalSearchCategory(skipped('localVisibility'))).toBeNull();
+    expect(scoreLocalSearchCategory(result('localVisibility', visibility([])))).toBeNull();
+  });
+});
+
+describe('scoreListingsCategory', () => {
+  it('scores three consistent listings 100', () => {
+    const raw = napRaw(
+      [foundListing('google'), foundListing('yelp'), foundListing('facebook')],
+      [],
+      ['phone', 'address', 'name'],
+    );
+    expect(scoreListingsCategory(result('napConsistency', raw))).toBe(100);
+  });
+
+  it('deducts the weight share of mismatched fields', () => {
+    const raw = napRaw(
+      [foundListing('google'), foundListing('yelp', { phone: '+15125559999' })],
+      [
+        {
+          field: 'phone',
+          sources: ['google', 'yelp'],
+          values: ['+15125551234', '+15125559999'],
+          message: 'phones differ',
+        },
+      ],
+      ['phone', 'address', 'name'],
+    );
+    // compared weight 0.85, mismatched 0.30 → 100*(1-0.3/0.85) = 64.7 → 65; one
+    // queryable platform (facebook) missing from the listings array is not penalized
+    // because only 2 listings were queried here.
+    expect(scoreListingsCategory(result('napConsistency', raw))).toBe(65);
+  });
+
+  it('penalizes platforms with no listing found', () => {
+    const raw = napRaw(
+      [
+        foundListing('google'),
+        foundListing('yelp'),
+        { ...foundListing('facebook'), found: false, name: null, address: null, phone: null },
+      ],
+      [],
+      ['phone', 'address', 'name'],
+    );
+    expect(scoreListingsCategory(result('napConsistency', raw))).toBe(85);
+  });
+
+  it('gives a single found listing the neutral base minus missing penalties', () => {
+    const raw = napRaw(
+      [
+        foundListing('google'),
+        { ...foundListing('yelp'), found: false, name: null, address: null, phone: null },
+        { ...foundListing('facebook'), found: false, name: null, address: null, phone: null },
+      ],
+      [],
+      [],
+    );
+    // base 70 (nothing comparable) - 2×15 missing = 40
+    expect(scoreListingsCategory(result('napConsistency', raw))).toBe(40);
+  });
+
+  it('scores zero listings found as 0', () => {
+    const raw = napRaw(
+      [{ ...foundListing('google'), found: false, name: null, address: null, phone: null }],
+      [],
+      [],
+    );
+    expect(scoreListingsCategory(result('napConsistency', raw))).toBe(0);
+  });
+
+  it('returns null when skipped or no platform was queryable', () => {
+    expect(scoreListingsCategory(skipped('napConsistency'))).toBeNull();
+    const allUnavailable = napRaw(
+      [
+        { ...foundListing('google'), found: false, unavailableReason: 'no key' },
+        { ...foundListing('yelp'), found: false, unavailableReason: 'no key' },
+      ],
+      [],
+      [],
+    );
+    expect(scoreListingsCategory(result('napConsistency', allUnavailable))).toBeNull();
+  });
+});
+
 describe('letterGrade', () => {
   it('maps boundaries exactly', () => {
     expect(letterGrade(100)).toBe('A');
@@ -303,18 +470,41 @@ describe('scoreScan', () => {
       pagespeed: result('pagespeed', goodPsi),
       safebrowsing: result('safebrowsing', { flagged: false, threats: [] }),
       httpsEnforced: result('httpsEnforced', secureHttps),
+      localVisibility: result('localVisibility', visibility([rank('a', 2, true), rank('b', 5)])),
+      napConsistency: result(
+        'napConsistency',
+        napRaw(
+          [foundListing('google'), foundListing('yelp'), foundListing('facebook')],
+          [],
+          ['phone', 'address', 'name'],
+        ),
+      ),
     };
   }
 
-  it('grades a healthy site A and is deterministic', () => {
+  it('grades a healthy site A and is deterministic, measuring all 7 categories', () => {
     const first = scoreScan(fullChecks());
     const second = scoreScan(fullChecks());
     expect(first).toEqual(second);
     expect(first.grade).toBe('A');
     expect(first.composite).toBeGreaterThanOrEqual(90);
     expect(first.categories).toHaveLength(7);
-    expect(first.categories.find((c) => c.id === 'localSearch')?.score).toBeNull();
-    expect(first.categories.find((c) => c.id === 'listings')?.score).toBeNull();
+    expect(first.categories.every((c) => c.score !== null)).toBe(true);
+    // (100+75)/2 + 10 = 97.5 → 98
+    expect(first.categories.find((c) => c.id === 'localSearch')?.score).toBe(98);
+    expect(first.categories.find((c) => c.id === 'listings')?.score).toBe(100);
+  });
+
+  it('renormalizes C4/C5 away when SERP and listing checks are skipped', () => {
+    const checks = {
+      ...fullChecks(),
+      localVisibility: skipped('localVisibility'),
+      napConsistency: skipped('napConsistency'),
+    };
+    const scores = scoreScan(checks);
+    expect(scores.categories.find((c) => c.id === 'localSearch')?.score).toBeNull();
+    expect(scores.categories.find((c) => c.id === 'listings')?.score).toBeNull();
+    expect(scores.grade).toBe('A'); // healthy site, fewer measured categories
   });
 
   it('still produces a grade when every check failed or was skipped', () => {
@@ -326,6 +516,8 @@ describe('scoreScan', () => {
       pagespeed: skipped('pagespeed'),
       safebrowsing: skipped('safebrowsing'),
       httpsEnforced: errored('httpsEnforced'),
+      localVisibility: skipped('localVisibility'),
+      napConsistency: skipped('napConsistency'),
     };
     const scores = scoreScan(checks);
     // Unreachable site: uptime measured as 0, everything else unmeasured.

@@ -5,7 +5,9 @@ export type CheckType =
   | 'crawl'
   | 'pagespeed'
   | 'safebrowsing'
-  | 'httpsEnforced';
+  | 'httpsEnforced'
+  | 'localVisibility'
+  | 'napConsistency';
 
 /** 'skipped' means the check could not run (e.g. missing API key), not that it failed. */
 export type CheckStatus = 'ok' | 'error' | 'skipped';
@@ -14,6 +16,10 @@ export interface CheckTarget {
   url: string;
   category?: string;
   city?: string;
+  /** Business name; falls back to a name derived from the domain when omitted. */
+  name?: string;
+  /** Tracked local-search keywords (max 5 used per scan). */
+  keywords?: string[];
 }
 
 export interface CheckResult<Raw = unknown> {
@@ -114,6 +120,58 @@ export interface HttpsEnforcedRaw {
   mixedContentSamples: string[];
 }
 
+export interface KeywordRank {
+  keyword: string;
+  /** Organic position, null when not in the top 50. */
+  position: number | null;
+  mapPack: boolean;
+  topCompetitors: string[];
+}
+
+export interface LocalVisibilityRaw {
+  provider: string;
+  location: string;
+  rankings: KeywordRank[];
+  inMapPack: boolean;
+  /** Vendor-reported API spend for this scan, when available. */
+  serpCostUsd: number | null;
+}
+
+export type ListingSource = 'google' | 'yelp' | 'facebook';
+
+export interface Listing {
+  source: ListingSource;
+  found: boolean;
+  /** Set when the platform could not be queried at all (missing key, API error). */
+  unavailableReason?: string;
+  name: string | null;
+  address: string | null;
+  phone: string | null;
+  hours: string[] | null;
+  rating: number | null;
+  reviewCount: number | null;
+  url: string | null;
+}
+
+export type NapField = 'name' | 'address' | 'phone' | 'hours';
+
+export interface NapMismatch {
+  field: NapField;
+  sources: ListingSource[];
+  values: string[];
+  /** Plain-English description for the report. */
+  message: string;
+}
+
+export interface NapConsistencyRaw {
+  businessName: string;
+  listings: Listing[];
+  /** Fields that had values on 2+ listings and could be compared. */
+  comparedFields: NapField[];
+  mismatches: NapMismatch[];
+  foundCount: number;
+}
+
 // ---------------------------------------------------------------------------
 // Scoring
 // ---------------------------------------------------------------------------
@@ -168,6 +226,8 @@ export interface ScanResult {
     pagespeed: CheckResult<PagespeedRaw>;
     safebrowsing: CheckResult<SafeBrowsingRaw>;
     httpsEnforced: CheckResult<HttpsEnforcedRaw>;
+    localVisibility: CheckResult<LocalVisibilityRaw>;
+    napConsistency: CheckResult<NapConsistencyRaw>;
   };
   scores: ScoreBreakdown;
 }

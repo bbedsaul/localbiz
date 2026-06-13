@@ -100,7 +100,10 @@ describe('runScan resilience', () => {
 
     expect(result.checks.uptime.status).toBe('error');
     expect(result.checks.crawl.status).toBe('error');
-    expect(Object.keys(result.checks)).toHaveLength(7);
+    // IP target → no derivable business name and no keywords: both skip.
+    expect(result.checks.napConsistency.status).toBe('skipped');
+    expect(result.checks.localVisibility.status).toBe('skipped');
+    expect(Object.keys(result.checks)).toHaveLength(9);
     for (const check of Object.values(result.checks)) {
       expect(['ok', 'error', 'skipped']).toContain(check.status);
     }

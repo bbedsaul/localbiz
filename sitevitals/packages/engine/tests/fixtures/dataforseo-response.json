@@ -1,0 +1,34 @@
+{
+  "version": "0.1.20260101",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.002,
+  "tasks_count": 1,
+  "tasks": [
+    {
+      "id": "06121906-1535-0066-0000-d24bf3aaa001",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.002,
+      "result": [
+        {
+          "keyword": "hvac repair austin",
+          "type": "organic",
+          "se_domain": "google.com",
+          "location_code": 1026201,
+          "items": [
+            { "type": "local_pack", "rank_group": 1, "title": "Cool Breeze HVAC", "domain": "coolbreezehvac.com" },
+            { "type": "local_pack", "rank_group": 2, "title": "Joe's HVAC", "domain": "www.joes-hvac.com" },
+            { "type": "local_pack", "rank_group": 3, "title": "Austin Air Pros", "domain": "austinairpros.com" },
+            { "type": "organic", "rank_group": 1, "domain": "www.yelp.com", "title": "Top 10 HVAC repair near Austin" },
+            { "type": "organic", "rank_group": 2, "domain": "coolbreezehvac.com", "title": "Cool Breeze HVAC | Austin AC Repair" },
+            { "type": "organic", "rank_group": 3, "domain": "austinairpros.com", "title": "Austin Air Pros" },
+            { "type": "organic", "rank_group": 4, "domain": "www.joes-hvac.com", "title": "Joe's HVAC — Austin Heating & Cooling" },
+            { "type": "organic", "rank_group": 5, "domain": "angi.com", "title": "HVAC contractors in Austin" },
+            { "type": "people_also_ask", "rank_group": 0 }
+          ]
+        }
+      ]
+    }
+  ]
+}

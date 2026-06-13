@@ -1,18 +1,32 @@
 #!/usr/bin/env node
 import { writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
+import { suggestKeywords } from './keywords.js';
 import { runScan } from './runner.js';
 import type { CheckResult, ScanResult } from './types.js';
 
-const USAGE = `Usage: pnpm engine scan <url> [--json out.json] [--category "HVAC"] [--city "Austin"]
+const USAGE = `Usage: pnpm engine scan <url> [options]
 
 Runs all SiteVitals checks against <url> and prints a summary.
-  --json <file>   also write the full ScanResult JSON to <file>
-  --category      business category metadata, carried into the result
-  --city          business city metadata, carried into the result
+  --json <file>     also write the full ScanResult JSON to <file>
+  --category        business category ("HVAC"); with --city, used to suggest keywords
+  --city            business city ("Austin"); pass "Austin,Texas,United States" for
+                    precise local rankings (DataForSEO canonical location name)
+  --name            business name for listing lookups (default: derived from domain)
+  --keywords        comma-separated tracked keywords, max 5 ("hvac repair austin,...")
 
-Optional env: PAGESPEED_API_KEY, SAFE_BROWSING_API_KEY (GOOGLE_API_KEY works for both).
+Optional env: PAGESPEED_API_KEY, SAFE_BROWSING_API_KEY (GOOGLE_API_KEY covers both),
+DATAFORSEO_LOGIN/DATAFORSEO_PASSWORD (or SERP_PROVIDER=serpapi + SERPAPI_KEY),
+GOOGLE_PLACES_API_KEY, YELP_API_KEY, FACEBOOK_ACCESS_TOKEN.
 Checks needing a missing key are reported as "skipped".`;
+
+function bestPosition(rankings: { position: number | null }[]): string {
+  const positions = rankings
+    .map((r) => r.position)
+    .filter((p): p is number => p !== null)
+    .sort((a, b) => a - b);
+  return positions.length > 0 ? `#${positions[0]}` : 'not in top 50';
+}
 
 function statusIcon(result: CheckResult): string {
   return result.status === 'ok' ? '✓' : result.status === 'skipped' ? '–' : '✗';
@@ -23,6 +37,8 @@ function summarize(result: ScanResult): string {
   const c = checks.crawl.raw;
   const psi = checks.pagespeed.raw;
   const https = checks.httpsEnforced.raw;
+  const lv = checks.localVisibility.raw;
+  const nap = checks.napConsistency.raw;
   const detail: Record<keyof ScanResult['checks'], string> = {
     uptime: checks.uptime.raw
       ? `HTTP ${checks.uptime.raw.statusCode} in ${checks.uptime.raw.responseTimeMs}ms, ${checks.uptime.raw.redirects.length} redirect(s)`
@@ -48,6 +64,12 @@ function summarize(result: ScanResult): string {
       : '',
     httpsEnforced: https
       ? `redirects:${https.httpRedirectsToHttps ? 'y' : 'n'}, mixed content: ${https.mixedContentCount}`
+      : '',
+    localVisibility: lv
+      ? `${lv.rankings.length} keyword(s), best position ${bestPosition(lv.rankings)}, map pack:${lv.inMapPack ? 'y' : 'n'} [${lv.provider}]`
+      : '',
+    napConsistency: nap
+      ? `${nap.foundCount}/${nap.listings.filter((l) => !l.unavailableReason).length} listings found, ${nap.mismatches.length} mismatch(es)${nap.mismatches.length ? ` (${nap.mismatches.map((m) => m.field).join(', ')})` : ''}`
       : '',
   };
 
@@ -76,6 +98,9 @@ function summarize(result: ScanResult): string {
   }
   lines.push('');
   lines.push(`  Composite: ${result.scores.composite}   Grade: ${result.scores.grade}`);
+  if (lv?.serpCostUsd !== null && lv?.serpCostUsd !== undefined) {
+    lines.push(`  SERP cost this scan: $${lv.serpCostUsd.toFixed(4)} (${lv.provider})`);
+  }
   lines.push('');
   return lines.join('\n');
 }
@@ -88,6 +113,8 @@ async function main(): Promise<number> {
       json: { type: 'string' },
       category: { type: 'string' },
       city: { type: 'string' },
+      name: { type: 'string' },
+      keywords: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -98,8 +125,23 @@ async function main(): Promise<number> {
     return values.help ? 0 : 1;
   }
 
+  let keywords = values.keywords
+    ?.split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
+  if (!keywords?.length && values.category && values.city) {
+    keywords = suggestKeywords(values.category, values.city);
+    console.log(`No --keywords given; tracking suggested keywords: ${keywords.join(', ')}`);
+  }
+
   console.log(`Scanning ${url} …`);
-  const result = await runScan({ url, category: values.category, city: values.city });
+  const result = await runScan({
+    url,
+    category: values.category,
+    city: values.city,
+    name: values.name,
+    keywords,
+  });
   console.log(summarize(result));
 
   if (values.json) {

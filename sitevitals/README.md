@@ -32,10 +32,19 @@ pnpm lint
 - `pagespeed` — PageSpeed Insights, mobile + desktop (needs `PAGESPEED_API_KEY`)
 - `safebrowsing` — Google Safe Browsing v4 (needs `SAFE_BROWSING_API_KEY`)
 - `httpsEnforced` — http→https redirect + homepage mixed content
+- `localVisibility` — organic position + map-pack presence per tracked keyword
+  via a swappable SERP provider (`SERP_PROVIDER=dataforseo|serpapi`); top 3
+  competitor domains recorded per keyword; vendor cost logged per scan
+- `napConsistency` — finds the business on Google/Yelp/Facebook and compares
+  name (fuzzy ≥0.85), phone (E.164), address, and hours; mismatches reported
+  in plain English
 
-`GOOGLE_API_KEY` works as a fallback for both Google APIs. Checks missing a key
-are reported as `skipped`, never as failures. A scan never throws — every check
-failure is captured in the `ScanResult` JSON (`status: 'error'`).
+Keywords come from `--keywords "a,b,c"`, or are auto-suggested from
+`--category` + `--city` (curated map of ~20 local-business categories in
+`src/keywords.ts`). See `.env.example` for the per-check API keys. Checks
+missing a key are reported as `skipped`, never as failures. A scan never
+throws — every check failure is captured in the `ScanResult` JSON
+(`status: 'error'`).
 
 ## Scoring
 

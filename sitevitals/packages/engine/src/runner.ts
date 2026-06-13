@@ -2,6 +2,8 @@ import {
   crawlCheck,
   domainCheck,
   httpsEnforcedCheck,
+  localVisibilityCheck,
+  napConsistencyCheck,
   pagespeedCheck,
   safebrowsingCheck,
   sslCheck,
@@ -39,7 +41,7 @@ export async function runScan(target: CheckTarget): Promise<ScanResult> {
   const url = normalizeUrl(target.url);
   const resolvedTarget: CheckTarget = { ...target, url };
 
-  const [uptime, ssl, domain, crawl, pagespeed, safebrowsing, httpsEnforced] =
+  const [uptime, ssl, domain, crawl, pagespeed, safebrowsing, httpsEnforced, lv, nap] =
     await Promise.allSettled([
       uptimeCheck.run(resolvedTarget),
       sslCheck.run(resolvedTarget),
@@ -48,6 +50,8 @@ export async function runScan(target: CheckTarget): Promise<ScanResult> {
       pagespeedCheck.run(resolvedTarget),
       safebrowsingCheck.run(resolvedTarget),
       httpsEnforcedCheck.run(resolvedTarget),
+      localVisibilityCheck.run(resolvedTarget),
+      napConsistencyCheck.run(resolvedTarget),
     ]);
 
   const checks: ScanResult['checks'] = {
@@ -58,6 +62,8 @@ export async function runScan(target: CheckTarget): Promise<ScanResult> {
     pagespeed: unwrap('pagespeed', pagespeed),
     safebrowsing: unwrap('safebrowsing', safebrowsing),
     httpsEnforced: unwrap('httpsEnforced', httpsEnforced),
+    localVisibility: unwrap('localVisibility', lv),
+    napConsistency: unwrap('napConsistency', nap),
   };
 
   return {
