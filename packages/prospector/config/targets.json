@@ -1,0 +1,17 @@
+{
+  "cities": [
+    "Akron OH",
+    "Canton OH",
+    "Dayton OH",
+    "Toledo OH",
+    "Youngstown OH"
+  ],
+  "categories": [
+    "plumber",
+    "auto repair",
+    "dry cleaner",
+    "landscaper",
+    "bakery",
+    "HVAC"
+  ]
+}

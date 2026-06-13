@@ -1,0 +1,3 @@
+packages:
+  - packages/*
+# dashboard/ (standalone React/Vite app) is intentionally excluded for now.
