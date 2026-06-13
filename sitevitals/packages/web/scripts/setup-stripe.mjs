@@ -44,6 +44,17 @@ if (!key) {
   process.exit(1);
 }
 
+// Safety: refuse live-mode keys unless explicitly forced. Verification should
+// run in TEST mode (test cards, no real charges, disposable products/prices).
+const isLive = key.includes('_live_');
+if (isLive && !process.argv.includes('--live')) {
+  console.error(
+    'Refusing to run: this is a LIVE-mode key (creates real products/prices and can take real payments).\n' +
+      'Use a TEST key (sk_test_… or rk_test_…) for verification, or pass --live to override intentionally.',
+  );
+  process.exit(1);
+}
+
 const stripe = new Stripe(key);
 
 const PLANS = [
@@ -79,7 +90,7 @@ async function ensurePrice(plan) {
   return { priceId: price.id, reused: false };
 }
 
-const mode = key.startsWith('sk_live') ? 'LIVE' : 'TEST';
+const mode = isLive ? 'LIVE' : 'TEST';
 console.log(`Creating SiteVitals prices in Stripe (${mode} mode)…\n`);
 
 const out = {};
