@@ -10,7 +10,14 @@ plain-English monthly report card.
 | -------------------- | ----------- | -------------------------------------------------- |
 | `@sitevitals/engine` | implemented | All check logic + scoring + report pipeline, runnable as a CLI |
 | `@sitevitals/worker` | implemented | Scheduled checks, Supabase persistence, alerts, monthly reports (BullMQ + Upstash) — see its README runbook |
-| `@sitevitals/web`    | placeholder | Next.js dashboard                                  |
+| `@sitevitals/web`    | implemented | Next.js App Router — landing, 3-min onboarding, dashboard |
+
+## Planning & docs
+
+- **[Validation plan](https://github.com/bbedsaul/localbiz/issues/48)** (epic #48) — the 30-day concierge GO/NO-GO before scaling the product. Start with the [Week 1 issues](https://github.com/bbedsaul/localbiz/labels/week-1).
+- [Pre-production checklist](docs/PRE_PRODUCTION.md) — what's left before real customers (mirrors GitHub issues).
+- [Decision log](DECISIONS.md) — non-obvious judgment calls and why.
+- [PRD](docs/PRD.md) — the product spec.
 
 ## Quick start
 
@@ -60,7 +67,7 @@ throws — every check failure is captured in the `ScanResult` JSON
 ## Scoring
 
 Category weights follow the product spec (uptime 25%, performance 15%, mobile
-10%, local search 20%, listings 15%, hygiene 10%, security 5%). The engine CLI
-does not measure local search or listings yet; unmeasured categories are
-renormalized out of the composite rather than counted as zero. Grades:
-A ≥90, B ≥80, C ≥70, D ≥60, F <60.
+10%, local search 20%, listings 15%, hygiene 10%, security 5%). Categories that
+can't be measured on a given scan (e.g. local search / listings with no API
+keys) are renormalized out of the composite rather than counted as zero.
+Grades: A ≥90, B ≥80, C ≥70, D ≥60, F <60.
