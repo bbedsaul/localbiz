@@ -1,0 +1,11 @@
+{
+  "name": "@sitevitals/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Placeholder — Next.js App Router dashboard. Not implemented yet.",
+  "scripts": {
+    "build": "echo '@sitevitals/web: nothing to build yet'",
+    "test": "echo '@sitevitals/web: no tests yet'"
+  }
+}

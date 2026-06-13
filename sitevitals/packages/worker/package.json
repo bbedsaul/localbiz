@@ -1,0 +1,11 @@
+{
+  "name": "@sitevitals/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Placeholder — schedulers, queues, alerting (BullMQ + Upstash Redis). Not implemented yet.",
+  "scripts": {
+    "build": "echo '@sitevitals/worker: nothing to build yet'",
+    "test": "echo '@sitevitals/worker: no tests yet'"
+  }
+}
