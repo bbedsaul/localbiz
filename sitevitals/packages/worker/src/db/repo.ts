@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { WebSocket } from 'ws';
 import type { CheckResult, ScanResult, ScoreBreakdown } from '@sitevitals/engine';
 import type {
   AlertRow,
@@ -11,6 +12,10 @@ import type {
 export function createServiceClient(url: string, serviceKey: string): SupabaseClient {
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // supabase-js builds a realtime client at construction; Node <22 has no
+    // native WebSocket, so supply ws. The worker never uses realtime — this
+    // just satisfies the constructor.
+    realtime: { transport: WebSocket as unknown as typeof globalThis.WebSocket },
   });
 }
 
