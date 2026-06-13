@@ -43,6 +43,7 @@ jest.unstable_mockModule('../src/db.js', () => ({
   getProspectPhotos: mockGetProspectPhotos,
   getProspectPhotoById: mockGetProspectPhotoById,
   deleteProspectPhoto: mockDeleteProspectPhoto,
+  getHotLeads: jest.fn(),
 }));
 
 jest.unstable_mockModule('../src/lib/storage.js', () => ({

@@ -56,6 +56,33 @@ export async function updateProspectScan(placeId: string, scan: ProspectScan): P
   }
 }
 
+/**
+ * Rank hot leads worst-site-first. A prospect whose website scores a D or F is
+ * the strongest sales signal — they visibly need help. Pure + testable.
+ */
+export function rankHotLeads(prospects: Prospect[], limit: number): Prospect[] {
+  return prospects
+    .filter((p) => p.scan != null && (p.scan.grade === 'D' || p.scan.grade === 'F'))
+    .sort((a, b) => (a.scan!.composite ?? 100) - (b.scan!.composite ?? 100))
+    .slice(0, limit);
+}
+
+/**
+ * The flywheel query: prospects whose latest SiteVitals scan graded D or F,
+ * worst first. These are the hottest outreach targets — a bad website is a
+ * concrete, demonstrable problem to lead with.
+ */
+export async function getHotLeads(limit = 20): Promise<Prospect[]> {
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('*')
+    .in('scan->>grade', ['D', 'F']);
+  if (error) {
+    throw new Error(`Failed to get hot leads: ${error.message}`);
+  }
+  return rankHotLeads((data as Prospect[]) ?? [], limit);
+}
+
 export async function findByPlaceId(placeId: string): Promise<Prospect | null> {
   const { data, error } = await supabase
     .from('prospects')

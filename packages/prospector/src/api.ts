@@ -23,6 +23,7 @@ import {
   getProspectPhotos,
   getProspectPhotoById,
   deleteProspectPhoto,
+  getHotLeads,
 } from './db.js';
 import { storage } from './lib/storage.js';
 import { runProspectorSweep } from './prospector.js';
@@ -287,6 +288,17 @@ app.get('/api/prospects/stats', authMiddleware, async (_req: AuthenticatedReques
     res.status(200).json(stats);
   } catch (error) {
     console.error('Failed to get prospect stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/prospects/hot', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { limit } = req.query;
+    const leads = await getHotLeads(limit ? parseInt(limit as string, 10) : 20);
+    res.status(200).json(leads);
+  } catch (error) {
+    console.error('Failed to get hot leads:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

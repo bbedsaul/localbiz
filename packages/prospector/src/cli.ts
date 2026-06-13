@@ -2,7 +2,7 @@ import * as readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 import { runProspectorSweep } from './prospector.js';
 import { promoteTopProspects } from './queue.js';
-import { getTopProspectsAll, getPipelineStats } from './db.js';
+import { getTopProspectsAll, getPipelineStats, getHotLeads } from './db.js';
 import 'dotenv/config';
 
 const rl = readline.createInterface({ input, output });
@@ -13,9 +13,10 @@ function printMenu(): void {
   console.log('========================================');
   console.log('1. Run a manual sweep');
   console.log('2. Show top 10 prospects by score');
-  console.log('3. Show pipeline stats');
-  console.log('4. Promote top prospects to outreach queue');
-  console.log('5. Exit');
+  console.log('3. Show hot leads (D/F website scan grade)');
+  console.log('4. Show pipeline stats');
+  console.log('5. Promote top prospects to outreach queue');
+  console.log('6. Exit');
   console.log('========================================\n');
 }
 
@@ -72,6 +73,36 @@ async function showTopProspects(): Promise<void> {
   }
 }
 
+async function showHotLeads(): Promise<void> {
+  console.log('\nFetching hot leads (D/F website scan grade, worst first)...\n');
+
+  try {
+    const prospects = await getHotLeads(20);
+
+    if (prospects.length === 0) {
+      console.log('No hot leads found. Run `scan:prospects` to grade prospect websites first.');
+      return;
+    }
+
+    // Print header
+    console.log('RANK | GRADE | SCORE | NAME                           | CITY            | PHONE');
+    console.log('-----|-------|-------|--------------------------------|-----------------|---------------');
+
+    // Print rows — worst sites are the hottest sales targets
+    prospects.forEach((p, i) => {
+      const rank = String(i + 1).padStart(4);
+      const grade = String(p.scan?.grade ?? '?').padStart(5);
+      const score = String(p.scan?.composite ?? 0).padStart(5);
+      const name = (p.name || '').slice(0, 30).padEnd(30);
+      const city = (p.city || '').slice(0, 15).padEnd(15);
+      const phone = (p.phone || 'N/A').slice(0, 14).padEnd(14);
+      console.log(`${rank} | ${grade} | ${score} | ${name} | ${city} | ${phone}`);
+    });
+  } catch (error) {
+    console.error('Failed to fetch hot leads:', error);
+  }
+}
+
 async function showPipelineStats(): Promise<void> {
   console.log('\nFetching pipeline stats...\n');
 
@@ -125,7 +156,7 @@ async function main(): Promise<void> {
   while (running) {
     printMenu();
 
-    const choice = await rl.question('Select an option (1-5): ');
+    const choice = await rl.question('Select an option (1-6): ');
 
     switch (choice.trim()) {
       case '1':
@@ -135,17 +166,20 @@ async function main(): Promise<void> {
         await showTopProspects();
         break;
       case '3':
-        await showPipelineStats();
+        await showHotLeads();
         break;
       case '4':
-        await promoteProspects();
+        await showPipelineStats();
         break;
       case '5':
+        await promoteProspects();
+        break;
+      case '6':
         running = false;
         console.log('\nGoodbye!\n');
         break;
       default:
-        console.log('\nInvalid option. Please enter 1-5.');
+        console.log('\nInvalid option. Please enter 1-6.');
     }
   }
 
