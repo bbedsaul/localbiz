@@ -2,10 +2,13 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import dotenv from 'dotenv';
 
-// Load worker-local .env first, then the monorepo root .env as fallback.
+// Load .env files in order of precedence (dotenv keeps the first value seen):
+// worker-local → sitevitals monorepo root → outer repo root (localbiz/.env,
+// where the shared Supabase/Google keys already live).
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
-dotenv.config({ path: path.join(here, '..', '..', '..', '.env') });
+dotenv.config({ path: path.join(here, '..', '..', '..', '.env') }); // sitevitals/.env
+dotenv.config({ path: path.join(here, '..', '..', '..', '..', '.env') }); // localbiz/.env
 
 export interface WorkerConfig {
   supabaseUrl: string;
