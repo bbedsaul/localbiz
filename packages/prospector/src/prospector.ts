@@ -1,4 +1,4 @@
-import { searchPlaces, getPlaceDetails, sleep, PlacesApiError } from './places-client.js';
+import { searchPlaces, getPlaceDetails, sleep, PlacesApiError } from '@platform/core/places';
 import { scoreProspect } from './scorer.js';
 import { upsertProspect } from './db.js';
 import { SweepParams, Prospect } from './types.js';

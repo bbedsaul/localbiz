@@ -1,5 +1,5 @@
 import { scoreProspect } from '../src/scorer.js';
-import { PlaceDetails } from '../src/types.js';
+import { PlaceDetails } from '@platform/core/types';
 
 describe('scoreProspect', () => {
   const createPlace = (overrides: Partial<PlaceDetails> = {}): PlaceDetails => ({

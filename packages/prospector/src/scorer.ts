@@ -1,4 +1,4 @@
-import { PlaceDetails } from './types.js';
+import { PlaceDetails } from '@platform/core/types';
 
 export function scoreProspect(place: PlaceDetails): number {
   let score = 50;

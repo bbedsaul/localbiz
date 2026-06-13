@@ -1,5 +1,5 @@
 import { jest, describe, it, expect, beforeEach, beforeAll, afterAll } from '@jest/globals';
-import { PlacesApiError } from '../src/types.js';
+import { PlacesApiError } from '@platform/core/types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockAxiosPost = jest.fn<() => Promise<any>>();
@@ -26,12 +26,12 @@ jest.unstable_mockModule('axios', () => {
   };
 });
 
-let searchPlaces: typeof import('../src/places-client.js').searchPlaces;
-let getPlaceDetails: typeof import('../src/places-client.js').getPlaceDetails;
+let searchPlaces: typeof import('@platform/core/places').searchPlaces;
+let getPlaceDetails: typeof import('@platform/core/places').getPlaceDetails;
 
 beforeAll(async () => {
   jest.useFakeTimers();
-  const placesClient = await import('../src/places-client.js');
+  const placesClient = await import('@platform/core/places');
   searchPlaces = placesClient.searchPlaces;
   getPlaceDetails = placesClient.getPlaceDetails;
 });

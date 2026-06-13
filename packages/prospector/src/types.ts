@@ -1,21 +1,5 @@
-export interface PlaceSearchResult {
-  id: string;
-  displayName: {
-    text: string;
-  };
-}
-
-export interface PlaceDetails {
-  id: string;
-  displayName: {
-    text: string;
-  };
-  websiteUri?: string;
-  nationalPhoneNumber?: string;
-  rating?: number;
-  userRatingCount?: number;
-  photos?: Array<{ name: string }>;
-}
+// Google Places types (PlaceDetails, PlaceSearchResult/Response, PlacesApiError)
+// now live in @platform/core/types.
 
 export interface Prospect {
   place_id: string;
@@ -61,22 +45,6 @@ export interface SweepParams {
   category: string;
 }
 
-export interface PlaceSearchResponse {
-  places: PlaceSearchResult[];
-  nextPageToken?: string;
-}
-
-export class PlacesApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public url: string,
-    public attempts: number
-  ) {
-    super(message);
-    this.name = 'PlacesApiError';
-  }
-}
 
 export interface ScheduledSearch {
   id: number;
