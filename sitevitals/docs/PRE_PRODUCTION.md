@@ -35,8 +35,9 @@ Status legend: ☐ todo · ◑ partial / in progress · ☑ done (kept here for 
 
 ## 3. Stripe / billing (code complete — account side outstanding)
 
-- ☑ `STRIPE_SECRET_KEY` — **test** key set & verified working. [#8](https://github.com/bbedsaul/localbiz/issues/8) (swap to a live key at go-live).
-- ☑ `setup:stripe` → Solo $29 / Pro $49 **test** prices created, wired into web `.env.local`. [#9](https://github.com/bbedsaul/localbiz/issues/9) (re-run with `--live` at go-live).
+- ☑ `STRIPE_SECRET_KEY` — **test** key set & verified working. [#8](https://github.com/bbedsaul/localbiz/issues/8) (live cutover → [#38](https://github.com/bbedsaul/localbiz/issues/38)).
+- ☑ `setup:stripe` → Solo $29 / Pro $49 **test** prices created, wired into web `.env.local`. [#9](https://github.com/bbedsaul/localbiz/issues/9) (live prices → [#38](https://github.com/bbedsaul/localbiz/issues/38)).
+- ☐ **Go-live cutover:** live key + `setup:stripe --live` live prices in Vercel env. [#38](https://github.com/bbedsaul/localbiz/issues/38)
 - ◑ Stripe webhook — verified locally via Stripe CLI (signature OK, business row updated). Production webhook on the Vercel URL still to create after deploy. [#10](https://github.com/bbedsaul/localbiz/issues/10)
 - ◑ End-to-end: checkout-session creation ✓ and webhook → DB write ✓ (test mode, against live DB). Browser card-payment click on the hosted page remains. [#11](https://github.com/bbedsaul/localbiz/issues/11)
 - ☑ Migration `002` (Stripe columns) applied; checkout action, webhook sync, portal all built.
