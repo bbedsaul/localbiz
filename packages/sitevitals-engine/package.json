@@ -17,7 +17,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
     "cheerio": "1.0.0-rc.12",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@platform/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.19.0",
