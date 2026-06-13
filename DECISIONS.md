@@ -100,3 +100,12 @@ Entry format:
 **Decision:** This file lives at `sitevitals/DECISIONS.md`, not the git root.
 **Why:** Every decision logged here is SiteVitals-specific; it belongs with the project's other top-level docs. "Repo root" was read as the project root.
 **Alternative / notes:** Move to `localbiz/DECISIONS.md` if a single cross-project log is preferred.
+
+### 2026-06-13 — prospector→sitevitals-engine is the one allowed cross-service edge
+**Decision:** Prospector's `scan-prospects` flywheel imports `runScan` directly from `sitevitals-engine` (a `workspace:*` dep) — the single place a service package imports another service rather than only `@platform/core`.
+**Why:** The engine is a pure library (no Supabase/Prospector imports), so the edge is safe and high-value: prospect scan grades become available for lead prioritization immediately. A `core` scan facade or calling the worker's HTTP endpoint would be cleaner but premature for one edge.
+**Alternative / notes:** A second cross-service edge appearing is the signal to add a `core` facade instead.
+
+### 2026-06-13 — scan-prospects schema is a nullable-column stopgap
+**Decision:** `migrations/006_scan_results.sql` adds nullable `website_url` + `scan jsonb` to the existing `prospects` table rather than a new table.
+**Why:** Prospector tracks website-LESS leads by design; the platform flywheel wants to scan websites — opposite populations. A dedicated `sites`/`scan_targets` table is the real fix but out of scope (Session 1 says no new tables). The nullable bolt-on satisfies the flywheel now.

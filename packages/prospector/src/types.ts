@@ -1,6 +1,12 @@
 // Google Places types (PlaceDetails, PlaceSearchResult/Response, PlacesApiError)
 // now live in @platform/core/types.
 
+export interface ProspectScan {
+  composite: number;
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  scanned_at: string;
+}
+
 export interface Prospect {
   place_id: string;
   name: string;
@@ -13,6 +19,8 @@ export interface Prospect {
   source?: 'form' | 'maps';
   city: string;
   category: string;
+  website_url?: string | null;
+  scan?: ProspectScan | null;
   created_at?: string;
   updated_at?: string;
 }

@@ -1,4 +1,4 @@
-import { Prospect, ProspectPhoto, ScheduledSearch, SiteBuild } from './types.js';
+import { Prospect, ProspectPhoto, ProspectScan, ScheduledSearch, SiteBuild } from './types.js';
 import { supabase } from '@platform/core/db';
 
 // The Supabase client lives in @platform/core/db now. Re-export so existing
@@ -20,6 +20,7 @@ export async function upsertProspect(prospect: Prospect): Promise<void> {
       source: prospect.source,
       city: prospect.city,
       category: prospect.category,
+      website_url: prospect.website_url ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'place_id' }
@@ -27,6 +28,31 @@ export async function upsertProspect(prospect: Prospect): Promise<void> {
 
   if (error) {
     throw new Error(`Failed to upsert prospect: ${error.message}`);
+  }
+}
+
+/** Prospects that have a website URL — the SiteVitals flywheel scans these. */
+export async function getProspectsToScan(): Promise<
+  Pick<Prospect, 'place_id' | 'name' | 'city' | 'category' | 'website_url'>[]
+> {
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('place_id, name, city, category, website_url')
+    .not('website_url', 'is', null);
+  if (error) {
+    throw new Error(`Failed to load prospects to scan: ${error.message}`);
+  }
+  return data ?? [];
+}
+
+/** Store the latest scan grade on a prospect record. */
+export async function updateProspectScan(placeId: string, scan: ProspectScan): Promise<void> {
+  const { error } = await supabase
+    .from('prospects')
+    .update({ scan, updated_at: new Date().toISOString() })
+    .eq('place_id', placeId);
+  if (error) {
+    throw new Error(`Failed to update prospect scan: ${error.message}`);
   }
 }
 
