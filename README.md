@@ -8,9 +8,9 @@ plain-English monthly report card.
 
 | Package              | Status      | Purpose                                            |
 | -------------------- | ----------- | -------------------------------------------------- |
-| `@sitevitals/engine` | implemented | All check logic + scoring + report pipeline, runnable as a CLI |
-| `@sitevitals/worker` | implemented | Scheduled checks, Supabase persistence, alerts, monthly reports (BullMQ + Upstash) — see its README runbook |
-| `@sitevitals/web`    | implemented | Next.js App Router — landing, 3-min onboarding, dashboard |
+| `sitevitals-engine` | implemented | All check logic + scoring + report pipeline, runnable as a CLI |
+| `sitevitals-worker` | implemented | Scheduled checks, Supabase persistence, alerts, monthly reports (BullMQ + Upstash) — see its README runbook |
+| `web`    | implemented | Next.js App Router — landing, 3-min onboarding, dashboard |
 
 ## Planning & docs
 

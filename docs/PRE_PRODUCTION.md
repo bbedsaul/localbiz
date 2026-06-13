@@ -22,7 +22,7 @@ Status legend: ☐ todo · ◑ partial / in progress · ☑ done (kept here for 
 
 - ☐ Verify a sending domain in Resend (ideally a dedicated subdomain, e.g. `mail.localmarketz.com`). [#1](https://github.com/bbedsaul/localbiz/issues/1)
 - ☐ Add DKIM / SPF / DMARC DNS records from day one. [#2](https://github.com/bbedsaul/localbiz/issues/2)
-- ☐ Update sender everywhere to the verified domain (worker Fly secret + `sitevitals/.env`). [#3](https://github.com/bbedsaul/localbiz/issues/3)
+- ☐ Update sender everywhere to the verified domain (worker Fly secret + `.env`). [#3](https://github.com/bbedsaul/localbiz/issues/3)
 - ☐ Warm up the sending domain before volume. [#4](https://github.com/bbedsaul/localbiz/issues/4)
 - ⚠️ Until done: all report/alert email only reaches `bbedsaul@gmail.com` (the Resend account email).
 

@@ -3,12 +3,12 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 
 // Load .env files in order of precedence (dotenv keeps the first value seen):
-// worker-local → sitevitals monorepo root → outer repo root (localbiz/.env,
-// where the shared Supabase/Google keys already live).
+// worker-local cwd → the monorepo root (.env), where shared keys live.
+// On Fly, env comes from Fly secrets (process.env), so missing files are a no-op.
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
-dotenv.config({ path: path.join(here, '..', '..', '..', '.env') }); // sitevitals/.env
-dotenv.config({ path: path.join(here, '..', '..', '..', '..', '.env') }); // localbiz/.env
+// packages/sitevitals-worker/{src,dist} → ../../../ = repo root
+dotenv.config({ path: path.join(here, '..', '..', '..', '.env') });
 
 export interface WorkerConfig {
   supabaseUrl: string;

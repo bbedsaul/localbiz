@@ -7,4 +7,7 @@ coverage/
 .idea/
 .vscode/
 *.tsbuildinfo
-config/targets.json
+packages/prospector/config/targets.json
+.next/
+.env*.local
+.turbo/

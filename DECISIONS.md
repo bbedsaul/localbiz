@@ -109,3 +109,21 @@ Entry format:
 ### 2026-06-13 — scan-prospects schema is a nullable-column stopgap
 **Decision:** `migrations/006_scan_results.sql` adds nullable `website_url` + `scan jsonb` to the existing `prospects` table rather than a new table.
 **Why:** Prospector tracks website-LESS leads by design; the platform flywheel wants to scan websites — opposite populations. A dedicated `sites`/`scan_targets` table is the real fix but out of scope (Session 1 says no new tables). The nullable bolt-on satisfies the flywheel now.
+
+### 2026-06-13 — Adopted the Prospector Platform monorepo
+**Decision:** Converted the repo root to a pnpm workspace (`packages/{core, prospector, sitevitals-engine, sitevitals-worker, web}`). The original Prospector app moved unchanged to `packages/prospector`; the nested `sitevitals/` workspace was flattened; SiteVitals packages renamed `@sitevitals/* → sitevitals-*`. Services import only from `@platform/core` (one logged exception: prospector→sitevitals-engine).
+**Why:** SiteVitals is one of several planned services (Missed-Call, Reviews, Social) on a shared `businesses` entity + `core` layer; a unified monorepo lets them slot in without restructuring.
+**Alternative / notes:** Rollback tags `pre-platform-monorepo` (start) and `platform-monorepo-relocated` (after the structural move). `dashboard/` (standalone React/Vite app) is intentionally excluded from the workspace globs for now.
+
+### 2026-06-13 — ScanResult contract in core; engine depends on core for types (Option A)
+**Decision:** The `ScanResult` type-graph lives in `@platform/core/types`; `sitevitals-engine` imports and re-exports it. The engine thus depends on `@platform/core` (types only).
+**Why:** Standard layering (services depend on core) and zero churn for the 18 worker/web import sites, which keep importing from the engine package. Chosen over keeping types in the engine (which would invert the dependency by having core re-export from a service).
+**Alternative / notes:** "Pure library" still holds — the engine has no Supabase/Prospector/network deps, just shared type declarations.
+
+### 2026-06-13 — core/db is the Supabase client only; service CRUD stays in services
+**Decision:** `@platform/core/db` exports only the configured `supabase` client. Prospector's ~460 lines of table CRUD stay in `packages/prospector/src/db.ts`, importing the client from core.
+**Why:** Keeps core dependency-light and domain-neutral; table-coupled queries belong to the owning service. Matches "extract ONLY the Supabase client + Places client."
+
+### 2026-06-13 — Fly app name preserved across the worker rename
+**Decision:** The worker package renamed to `sitevitals-worker` but the Fly app stays `sitevitals-worker`; only build paths + `pnpm --filter` names changed in the Dockerfile/fly.toml.
+**Why:** Preserves the live DNS, secrets, and machine — the redeploy is a build-path change, not an app migration.
