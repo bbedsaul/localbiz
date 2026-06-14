@@ -127,3 +127,13 @@ Entry format:
 ### 2026-06-13 — Fly app name preserved across the worker rename
 **Decision:** The worker package renamed to `sitevitals-worker` but the Fly app stays `sitevitals-worker`; only build paths + `pnpm --filter` names changed in the Dockerfile/fly.toml.
 **Why:** Preserves the live DNS, secrets, and machine — the redeploy is a build-path change, not an app migration.
+
+### 2026-06-14 — Web deploys via Docker (`pnpm deploy --prod` + `next start`), not Next standalone
+**Decision:** `packages/web/Dockerfile` builds core→engine→web, then ships a flattened prod `node_modules` via `pnpm --filter web deploy --prod --legacy` and runs `next start` — the same pattern as the worker. We do NOT use Next's `output: 'standalone'`.
+**Why:** The instant-scan route imports the workspace package `sitevitals-engine`, which is in `serverComponentsExternalPackages`. Next deliberately does not bundle or file-trace externalized packages, so standalone's pruned `node_modules` omits the engine (and cheerio / `@platform/core`) → `Cannot find module 'sitevitals-engine'` at runtime. The `pnpm deploy` flatten includes the engine and its transitive deps via the `.pnpm` store; verified locally that `next start` boots and the engine→cheerio→core import chain resolves.
+**Alternative / notes:** Target is Coolify on a Hostinger VPS (not Vercel). `NEXT_PUBLIC_*` vars are inlined at build time, so they're Docker build ARGs (Coolify "Build Variable"); server secrets are runtime env. Build context = repo root; Dockerfile at `packages/web/Dockerfile`.
+
+### 2026-06-14 — Prospector deploys as its own Coolify app (API), same Docker pattern
+**Decision:** Added `packages/prospector/Dockerfile` (build core→engine→prospector, `pnpm deploy --prod --legacy`, run `node dist/api.js`). Prospector is a SEPARATE Coolify application from web — own container, port 3001, `/health` check — not bundled with web.
+**Why:** Each service is an independent deployable on the shared monorepo + core layer (web on Coolify, worker on Fly, prospector on Coolify). The web Dockerfile never builds prospector — it only copies prospector's package.json for the frozen-lockfile install.
+**Alternative / notes:** The container runs the API, not the cron scheduler (`dist/scheduler.js`); a sweep service would be a third app overriding the command. Prospector needs `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `GOOGLE_API_KEY` at boot — `@platform/core/places` throws on import if the Google key is missing (verified: API boots and serves `/health` 200 once set). `config/targets.json` is copied beside `dist/` because `config.ts` resolves it via `__dirname/../config`.

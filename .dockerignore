@@ -1,0 +1,16 @@
+# Keep the Docker build context small + reproducible (install from lockfile).
+**/node_modules
+**/.next
+**/dist
+**/out
+**/.turbo
+**/coverage
+**/*.log
+**/.env
+**/.env.*
+!**/.env.local.example
+.git
+.github
+dashboard
+docs
+**/.DS_Store
