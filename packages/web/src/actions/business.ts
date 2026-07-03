@@ -19,9 +19,15 @@ export interface ActionResult {
   businessId?: string;
 }
 
+const ENTITLED = new Set(['trialing', 'active', 'past_due']);
+
 /**
- * Create the business + tracked keywords for the signed-in owner. RLS enforces
- * owner_user_id = auth.uid(); the worker picks the business up on its next tick.
+ * Create (or resume) the signed-in owner's business + a customer profile, then
+ * mark services.sitevitals.status='incomplete' — the pre-payment placeholder the
+ * Stripe webhook flips to 'trialing' at checkout. Idempotent on the auth user:
+ * a returning abandoner reuses their row (no duplicate) and we never downgrade an
+ * already-entitled business back to incomplete. (Entitled transitions are
+ * webhook-only; this writes only the pre-entitlement marker.)
  */
 export async function createBusiness(payload: OnboardingPayload): Promise<ActionResult> {
   const supabase = createClient();
@@ -29,6 +35,28 @@ export async function createBusiness(payload: OnboardingPayload): Promise<Action
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'Not signed in.' };
+
+  // Look at any existing business for this owner to preserve entitlement.
+  const { data: existing } = await supabase
+    .from('businesses')
+    .select('id, services, active, subscription_status')
+    .eq('owner_user_id', user.id)
+    .maybeSingle();
+
+  const existingRow = existing as {
+    services?: Record<string, { status?: string }>;
+    active?: boolean;
+    subscription_status?: string;
+  } | null;
+  const svStatus = existingRow?.services?.sitevitals?.status;
+  const alreadyEntitled =
+    existingRow?.active === true ||
+    ENTITLED.has(existingRow?.subscription_status ?? '') ||
+    ENTITLED.has(svStatus ?? '');
+
+  const services = alreadyEntitled
+    ? (existingRow?.services ?? {})
+    : { ...(existingRow?.services ?? {}), sitevitals: { status: 'incomplete', plan: payload.plan ?? 'solo' } };
 
   const { data, error } = await supabase
     .from('businesses')
@@ -42,7 +70,8 @@ export async function createBusiness(payload: OnboardingPayload): Promise<Action
         city: payload.city,
         phone: payload.phone ?? null,
         plan: payload.plan ?? 'solo',
-        active: true,
+        active: alreadyEntitled, // stays off until the trial starts (webhook)
+        services,
       },
       { onConflict: 'url' },
     )
@@ -51,6 +80,16 @@ export async function createBusiness(payload: OnboardingPayload): Promise<Action
 
   if (error) return { ok: false, error: error.message };
   const businessId = data.id as string;
+
+  // Ensure a profile without clobbering an existing role (e.g. admin), then
+  // link it to this business.
+  await supabase
+    .from('profiles')
+    .upsert({ user_id: user.id, role: 'customer', business_id: businessId }, {
+      onConflict: 'user_id',
+      ignoreDuplicates: true,
+    });
+  await supabase.from('profiles').update({ business_id: businessId }).eq('user_id', user.id);
 
   const keywords = payload.keywords.filter(Boolean).slice(0, 5);
   if (keywords.length > 0) {

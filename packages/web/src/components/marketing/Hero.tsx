@@ -116,7 +116,9 @@ export function Hero() {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button href="/signup?service=sitevitals">See my full report</Button>
+                <Button href={`/signup?service=sitevitals&url=${encodeURIComponent(value)}`}>
+                  See my full report
+                </Button>
                 <button
                   type="button"
                   onClick={() => {

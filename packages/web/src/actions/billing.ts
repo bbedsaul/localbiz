@@ -1,25 +1,27 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { getPriceId, type PlanId, type Interval } from '@platform/core/billing';
 import { createClient } from '@/lib/supabase/server';
-import { getStripe, priceIdFor, type PlanId } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 
 function appOrigin(): string {
   return process.env.NEXT_PUBLIC_APP_URL ?? `https://${headers().get('host')}`;
 }
 
 /**
- * Start a 14-day-trial subscription checkout (card required). Returns a URL to
- * redirect to, or null when Stripe isn't configured (dev → skip straight to
- * the dashboard).
+ * Start a 14-day-trial subscription checkout (card required). Price id comes
+ * from the billing_prices config table (env fallback). subscription_data.metadata
+ * carries business_id so subscription.* webhooks can resolve the business.
+ * Returns a URL to redirect to, or null when Stripe/price isn't configured.
  */
 export async function createCheckout(
   businessId: string,
   plan: PlanId,
+  interval: Interval = 'monthly',
 ): Promise<{ url: string | null; error?: string }> {
   const stripe = getStripe();
-  const price = priceIdFor(plan);
-  if (!stripe || !price) return { url: null };
+  if (!stripe) return { url: null };
 
   const supabase = createClient();
   const {
@@ -27,12 +29,15 @@ export async function createCheckout(
   } = await supabase.auth.getUser();
   if (!user?.email) return { url: null, error: 'Not signed in.' };
 
+  const price = await getPriceId(supabase, plan, interval);
+  if (!price) return { url: null };
+
   const origin = appOrigin();
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer_email: user.email,
     line_items: [{ price, quantity: 1 }],
-    subscription_data: { trial_period_days: 14 },
+    subscription_data: { trial_period_days: 14, metadata: { business_id: businessId, plan } },
     payment_method_collection: 'always', // card required even during trial
     client_reference_id: businessId,
     metadata: { business_id: businessId, plan },

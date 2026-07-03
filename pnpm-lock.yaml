@@ -38,6 +38,9 @@ importers:
       dotenv:
         specifier: ^16.3.1
         version: 16.6.1
+      stripe:
+        specifier: ^17.7.0
+        version: 17.7.0
       ws:
         specifier: ^8.21.0
         version: 8.21.0
@@ -51,6 +54,9 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@18.19.130)
 
   packages/prospector:
     dependencies:
@@ -207,6 +213,9 @@ importers:
 
   packages/web:
     dependencies:
+      '@platform/core':
+        specifier: workspace:*
+        version: link:../core
       '@supabase/ssr':
         specifier: ^0.5.2
         version: 0.5.2(@supabase/supabase-js@2.108.1)
