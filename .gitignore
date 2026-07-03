@@ -11,3 +11,6 @@ packages/prospector/config/targets.json
 .next/
 .env*.local
 .turbo/
+
+# Lighthouse CI local artifacts
+.lighthouseci/

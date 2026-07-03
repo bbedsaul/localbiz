@@ -89,7 +89,7 @@ export async function runFastScan(
 
   await Promise.all(
     FAST_CHECKS.map(async ({ type, label, run }) => {
-      const result = await run(target).catch((err: unknown) => skipped(type) as CheckResult);
+      const result = await run(target).catch(() => skipped(type) as CheckResult);
       results.set(type, result);
       onEvent({
         type: 'check',

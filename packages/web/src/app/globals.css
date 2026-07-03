@@ -7,13 +7,13 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-canvas text-ink antialiased;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    @apply bg-canvas font-sans text-ink antialiased;
   }
+  /* Display face for headings — painted-sign register. */
   h1,
   h2,
   h3 {
-    @apply tracking-[-0.01em];
+    @apply font-display tracking-[-0.01em];
     text-wrap: balance;
   }
 }
@@ -22,33 +22,37 @@
   .container-page {
     @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
   }
+  /* Legacy primitives kept for pre-W1 pages; now derived from brand tokens.
+     Marketing/design-system code uses the src/components/ui/* components. */
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-card;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-900/40 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700;
+    @apply btn bg-green-900 text-paper-50 hover:bg-green-800 active:bg-green-700;
   }
   .btn-secondary {
-    @apply btn border border-line bg-surface text-ink hover:bg-canvas;
+    @apply btn border border-line bg-surface text-ink hover:bg-paper-100;
   }
   .btn-ghost {
-    @apply btn text-ink-soft hover:bg-canvas;
+    @apply btn text-ink-soft hover:bg-paper-100;
   }
   .field {
-    @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
+    @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-faint focus:border-green-900 focus:outline-none focus:ring-2 focus:ring-green-900/20;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink-soft;
   }
 }
 
-/* Respect reduced-motion for the scan progress animations. */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

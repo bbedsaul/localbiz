@@ -1,0 +1,52 @@
+/**
+ * LocalMarket design tokens — the single source of truth for brand color.
+ * Every component derives from these variables (via Tailwind's theme map in
+ * tailwind.config.ts). Do not hard-code hex values in components.
+ *
+ * Colors are stored as space-separated RGB channels so Tailwind can compose
+ * opacity: theme maps each to `rgb(var(--x) / <alpha-value>)`. In raw CSS/SVG,
+ * reference them as `rgb(var(--x))`.
+ *
+ * Palette is binding (Section 0 brand doc): signboard green, brick accent,
+ * warm paper ground, charcoal ironwork, sparing peach highlight.
+ */
+:root {
+  /* --- Brand palette (binding) --- */
+  --green-900: 23 72 59; /* #17483B signboard green — primary / structure */
+  --green-800: 28 88 73; /* #1C5849 */
+  --green-700: 35 106 88; /* #236A58 */
+  --green-100: 213 228 222; /* #D5E4DE */
+  --green-50: 238 244 241; /* #EEF4F1 */
+
+  --brick-600: 179 64 42; /* #B3402A accent / CTAs */
+  --brick-700: 143 50 33; /* #8F3221 */
+  --brick-100: 241 217 210; /* #F1D9D2 */
+
+  --paper-50: 250 246 238; /* #FAF6EE background */
+  --paper-100: 243 236 221; /* #F3ECDD raised panels */
+  --paper-200: 236 226 205; /* #ECE2CD */
+
+  --charcoal-900: 38 36 31; /* #26241F text / ironwork */
+  --charcoal-700: 74 71 63; /* #4A473F */
+  --charcoal-500: 114 109 97; /* #726D61 */
+
+  --peach-300: 232 168 124; /* #E8A87C sparing warm highlight */
+
+  --line: 227 218 198; /* #E3DAC6 warm hairline */
+  --surface: 255 255 255; /* white cards on paper */
+
+  /* --- Grade scale (report card A–F) --- */
+  --grade-a: 46 125 50; /* #2E7D32 */
+  --grade-b: 85 139 47; /* #558B2F */
+  --grade-c: 249 168 37; /* #F9A825 */
+  --grade-d: 239 108 0; /* #EF6C00 */
+  --grade-f: 198 40 40; /* #C62828 */
+
+  /* --- Elevation --- */
+  --shadow-card: 0 1px 2px rgba(38, 36, 31, 0.05), 0 4px 16px rgba(38, 36, 31, 0.06);
+  --shadow-lift: 0 10px 34px rgba(38, 36, 31, 0.14);
+  --shadow-sign: 0 14px 30px rgba(23, 72, 59, 0.22);
+
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}

@@ -13,7 +13,7 @@ export function GradeBadge({
   const px = SIZES[size];
   return (
     <div
-      className="grid shrink-0 place-items-center rounded-full font-bold text-white"
+      className="grid shrink-0 place-items-center rounded-full font-bold text-paper-50"
       style={{
         width: px,
         height: px,

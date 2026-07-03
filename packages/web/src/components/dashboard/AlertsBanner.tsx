@@ -14,7 +14,7 @@ export function AlertsBanner({ alerts }: { alerts: AlertRow[] }) {
     );
   }
   return (
-    <div className="card border-grade-f/30 bg-red-50 p-4">
+    <div className="card border-grade-f/30 bg-grade-f/10 p-4">
       <p className="mb-2 text-sm font-bold text-grade-f">
         {alerts.length} {alerts.length === 1 ? 'issue needs' : 'issues need'} attention
       </p>

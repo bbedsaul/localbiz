@@ -19,7 +19,7 @@ function Icon({ status }: { status: CheckLine['status'] }) {
   }
   if (status === 'error') {
     return (
-      <span className="grid h-5 w-5 place-items-center rounded-full bg-red-50 text-grade-f" aria-hidden>
+      <span className="grid h-5 w-5 place-items-center rounded-full bg-grade-f/10 text-grade-f" aria-hidden>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
           <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
         </svg>

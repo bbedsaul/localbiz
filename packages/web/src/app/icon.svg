@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LocalMarket">
+  <rect width="64" height="64" rx="13" fill="#17483B"/>
+  <rect x="7" y="7" width="50" height="50" rx="7" fill="none" stroke="#FAF6EE" stroke-width="3"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30" fill="#FAF6EE">L<tspan fill="#E8A87C">M</tspan></text>
+  <line x1="18" y1="49" x2="46" y2="49" stroke="#B3402A" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

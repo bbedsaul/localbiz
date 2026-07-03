@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 210" role="img" aria-label="LocalMarket logo concept: hanging shop sign">
+  <!-- Concept 3: The Signboard — hand-crafted hanging shop sign, tradesperson register -->
+  <defs>
+    <style>
+      .display { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
+      .utility { font-family: Verdana, Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="680" height="210" fill="#FAF6EE"/>
+
+  <!-- wall post and bracket arm -->
+  <rect x="42" y="30" width="9" height="48" rx="2" fill="#26241F"/>
+  <rect x="42" y="34" width="138" height="9" rx="2" fill="#26241F"/>
+  <!-- bracket brace -->
+  <line x1="51" y1="70" x2="92" y2="43" stroke="#26241F" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- hanging rings -->
+  <circle cx="96" cy="50" r="5" fill="none" stroke="#26241F" stroke-width="3.5"/>
+  <circle cx="156" cy="50" r="5" fill="none" stroke="#26241F" stroke-width="3.5"/>
+  <line x1="96" y1="55" x2="96" y2="66" stroke="#26241F" stroke-width="3.5"/>
+  <line x1="156" y1="55" x2="156" y2="66" stroke="#26241F" stroke-width="3.5"/>
+
+  <!-- signboard -->
+  <rect x="64" y="66" width="124" height="96" rx="8" fill="#17483B"/>
+  <rect x="72" y="74" width="108" height="80" rx="5" fill="none" stroke="#FAF6EE" stroke-width="2.5"/>
+
+  <!-- LM monogram -->
+  <text x="126" y="132" text-anchor="middle" class="display" font-size="46" fill="#FAF6EE">L<tspan fill="#E8A87C" dx="2">M</tspan></text>
+  <!-- painted underline flourish -->
+  <line x1="96" y1="142" x2="156" y2="142" stroke="#B3402A" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- wordmark -->
+  <text x="220" y="120" class="display" font-size="52">
+    <tspan fill="#17483B">Local</tspan><tspan fill="#B3402A">Market</tspan>
+  </text>
+
+  <!-- slogan -->
+  <text x="224" y="152" class="utility" font-size="14" letter-spacing="4" fill="#26241F">ONLINE, HANDLED.</text>
+</svg>
