@@ -1,6 +1,14 @@
 import type { ScanResult } from 'sitevitals-engine';
 import { createClient } from '@/lib/supabase/server';
 
+/** One service's entitlement, as stored under businesses.services[key]. */
+export interface ServiceEntitlement {
+  status?: 'incomplete' | 'trialing' | 'active' | 'past_due' | 'canceled';
+  plan?: string;
+  stripe_subscription_id?: string;
+  current_period_end?: string;
+}
+
 export interface BusinessRow {
   id: string;
   name: string;
@@ -12,6 +20,8 @@ export interface BusinessRow {
   phone: string | null;
   stripe_customer_id?: string | null;
   subscription_status?: string | null;
+  /** Entitlement source of truth — written only by the Stripe webhook. */
+  services?: Record<string, ServiceEntitlement> | null;
 }
 
 export interface ScoreRow {

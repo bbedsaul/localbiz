@@ -1,9 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { routeDecision, needsRole, type Role } from '@/lib/routing';
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-/** Refresh the auth session on every request and guard /dashboard. */
+/** Refresh the auth session on every request and apply role-based routing. */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
 
@@ -31,11 +32,22 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  if (!user && path.startsWith('/dashboard')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('next', path);
-    return NextResponse.redirect(url);
+
+  // Resolve role only when a decision actually depends on it (front door /
+  // operator console) — avoids a profiles lookup on every request.
+  let role: Role = null;
+  if (needsRole(!!user, path)) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user!.id)
+      .maybeSingle();
+    role = ((data?.role as Role) ?? null) as Role;
+  }
+
+  const target = routeDecision({ authed: !!user, role, path });
+  if (target && target !== `${path}${request.nextUrl.search}`) {
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   return response;

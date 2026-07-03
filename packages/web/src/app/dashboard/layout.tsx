@@ -7,8 +7,8 @@ import { prettyHost } from '@/lib/format';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const business = await getPrimaryBusiness();
-  // Authenticated but no business yet → finish onboarding.
-  if (!business) redirect('/onboarding');
+  // Authenticated but no business yet → start (or resume) signup.
+  if (!business) redirect('/signup?service=sitevitals');
 
   return (
     <div className="min-h-screen">
