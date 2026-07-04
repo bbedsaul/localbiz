@@ -108,3 +108,21 @@ export async function getReports(businessId: string): Promise<ReportRow[]> {
     .order('period', { ascending: false });
   return (data ?? []) as ReportRow[];
 }
+
+export interface ChangeRequestRow {
+  id: string;
+  body: string;
+  status: 'open' | 'in_progress' | 'done';
+  attached_file_key: string | null;
+  created_at: string;
+}
+
+export async function getChangeRequests(businessId: string): Promise<ChangeRequestRow[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('change_requests')
+    .select('id, body, status, attached_file_key, created_at')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false });
+  return (data ?? []) as ChangeRequestRow[];
+}

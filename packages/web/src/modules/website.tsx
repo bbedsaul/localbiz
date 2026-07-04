@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import type { BusinessRow } from '@/lib/dashboard';
+import { getLatestScan, getChangeRequests } from '@/lib/dashboard';
 import { Badge } from '@/components/ui';
+import { RequestChangesForm } from '@/components/dashboard/RequestChangesForm';
+import { cn } from '@/lib/cn';
 import type { ServiceModule } from './types';
 
 const BASE = '/dashboard/website';
 
-// Shape stored under businesses.services.website (written by the admin console,
-// a later session). Read-only here.
 interface WebsiteService {
   status?: 'requested' | 'building' | 'live' | 'paused';
   url?: string;
@@ -44,30 +45,137 @@ async function OverviewCard({ business }: { business: BusinessRow }) {
   );
 }
 
-// Stage A: light overview from services.website. The full concierge experience
-// (status timeline, screenshot, change requests) lands in Stage B.
+const TIMELINE: WebsiteService['status'][] = ['requested', 'building', 'live'];
+
+function StatusTimeline({ status }: { status: WebsiteService['status'] }) {
+  const current = Math.max(0, TIMELINE.indexOf(status ?? 'building'));
+  return (
+    <ol className="flex items-center gap-2 text-sm">
+      {TIMELINE.map((step, i) => (
+        <li key={step} className="flex items-center gap-2">
+          <span
+            className={cn(
+              'grid h-6 w-6 place-items-center rounded-full text-xs font-bold',
+              i <= current ? 'bg-green-900 text-paper-50' : 'bg-paper-200 text-charcoal-500',
+            )}
+          >
+            {i < current ? '✓' : i + 1}
+          </span>
+          <span className={cn('capitalize', i <= current ? 'font-medium text-green-900' : 'text-charcoal-500')}>
+            {step}
+          </span>
+          {i < TIMELINE.length - 1 && <span className="mx-1 h-px w-6 bg-line" />}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 async function Overview({ business }: { business: BusinessRow }) {
   const w = websiteData(business);
+  const scan = await getLatestScan(business.id);
+  const ssl = scan?.checks.ssl?.raw ?? null;
+  const domain = scan?.checks.domain?.raw ?? null;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-ink">Your website</h1>
-        <p className="text-ink-faint">Built and hosted by LocalMarket.</p>
+        <p className="text-ink-faint">Built, hosted, and maintained by LocalMarket.</p>
       </div>
-      <div className="card p-6">
-        <div className="flex items-center gap-3">
-          <Badge tone={w.status === 'live' ? 'green' : 'neutral'}>{w.status ?? 'building'}</Badge>
-          {w.url && (
-            <a href={w.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-brick-600 underline">
-              {w.url}
-            </a>
+
+      <div className="card space-y-5 p-6">
+        <StatusTimeline status={w.status} />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          {w.screenshot_url && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={w.screenshot_url}
+              alt="Your website"
+              className="h-28 w-44 shrink-0 rounded-lg border border-line object-cover"
+            />
           )}
+          <div className="min-w-0">
+            {w.url ? (
+              <a href={w.url} target="_blank" rel="noreferrer" className="font-medium text-brick-600 underline">
+                {w.url}
+              </a>
+            ) : (
+              <p className="text-ink-soft">Your live URL appears here once the build goes live.</p>
+            )}
+            {w.hosting_plan && <p className="mt-1 text-sm text-ink-faint">Hosting · {w.hosting_plan}</p>}
+          </div>
         </div>
-        <p className="mt-4 text-sm text-ink-soft">
-          Live build status, screenshot, domain &amp; SSL, and a “request changes” form are coming
-          in the next update.
-        </p>
+        {(ssl || domain) && (
+          <div className="grid gap-3 border-t border-line pt-4 text-sm sm:grid-cols-2">
+            {ssl && (
+              <p className="text-ink-soft">
+                🔒 Security certificate {ssl.valid ? 'valid' : 'needs attention'}
+                {typeof ssl.daysRemaining === 'number' ? ` · renews in ${ssl.daysRemaining} days` : ''}
+              </p>
+            )}
+            {domain && (
+              <p className="text-ink-soft">
+                🌐 Domain{domain.registrar ? ` (${domain.registrar})` : ''}
+                {typeof domain.daysRemaining === 'number' ? ` · renews in ${domain.daysRemaining} days` : ''}
+              </p>
+            )}
+            <p className="text-xs text-ink-faint sm:col-span-2">From your SiteVitals monitoring — display only.</p>
+          </div>
+        )}
       </div>
+
+      <div className="card p-6">
+        <h2 className="text-lg font-bold text-ink">Request a change</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Tell us what to update — new hours, a photo, some copy. We handle it and mark it done.
+        </p>
+        <div className="mt-4">
+          <RequestChangesForm />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const STATUS_TONE = { open: 'neutral', in_progress: 'peach', done: 'green' } as const;
+const STATUS_LABEL = { open: 'Open', in_progress: 'In progress', done: 'Done' } as const;
+
+async function Reports({ business }: { business: BusinessRow }) {
+  const requests = await getChangeRequests(business.id);
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-ink">Change requests</h1>
+        <p className="text-ink-faint">Everything you&rsquo;ve asked us to change, and where it stands.</p>
+      </div>
+      {requests.length === 0 ? (
+        <div className="card p-8 text-center">
+          <p className="font-medium text-ink">No requests yet</p>
+          <p className="mt-1 text-ink-soft">
+            Need something changed?{' '}
+            <Link href={BASE} className="font-medium text-brick-600 underline">
+              Send a request
+            </Link>{' '}
+            from your website overview.
+          </p>
+        </div>
+      ) : (
+        <div className="card divide-y divide-line">
+          {requests.map((r) => (
+            <div key={r.id} className="px-6 py-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-ink-faint">
+                  {new Date(r.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+                </span>
+                <Badge tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Badge>
+              </div>
+              <p className="mt-2 whitespace-pre-wrap text-ink">{r.body}</p>
+              {r.attached_file_key && <p className="mt-1 text-xs text-ink-faint">📎 Attachment included</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -75,7 +183,7 @@ async function Overview({ business }: { business: BusinessRow }) {
 const Stub = ({ label }: { label: string }) => (
   <div className="card p-8 text-center">
     <p className="font-medium text-ink">{label}</p>
-    <p className="mt-1 text-sm text-ink-soft">This lands in the next update.</p>
+    <p className="mt-1 text-sm text-ink-soft">Manage this from your website overview for now.</p>
   </div>
 );
 
@@ -96,7 +204,7 @@ export const websiteModule: ServiceModule = {
   },
   pages: {
     Overview,
-    Reports: () => <Stub label="Change-request history" />,
+    Reports,
     Settings: () => <Stub label="Website settings" />,
   },
 };
